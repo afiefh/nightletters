@@ -51,7 +51,7 @@ int main()
   // Limit the framerate to 60 frames per second (this step is optional)
   window.setFramerateLimit(60);
 
-  const char *string = " مرحباًمر";
+  const char *string = "مكتبة كتابة بالعربية!";
   /***** HARFBUZZ STUFF**********/
   FT_Library ft_library;
   assert(!FT_Init_FreeType(&ft_library));
@@ -88,21 +88,21 @@ int main()
     FT_Bitmap * bitmap = &glyph->bitmap;
     //printf("Glyph w: %u h: %u\n",bitmap->width, bitmap->rows );
     //printf("Offset x: %d y:%d, advance x:%d y:%d bbox %ld %ld\n",glyph_pos[i].x_offset/64, glyph_pos[i].y_offset/64, glyph_pos[i].x_advance/64 , glyph_pos[i].y_advance/64, ft_face->bbox.yMin, ft_face->bbox.yMax );
-    printf("bitmap_left %d bitmap_top %d\n", glyph->bitmap_left, glyph->bitmap_top);
+    //printf("bitmap_left %d bitmap_top %d\n", glyph->bitmap_left, glyph->bitmap_top);
     for(int y=0;y<bitmap->rows;y++)
       for(int x=0;x<bitmap->width;x++) {
 	sf::Uint8 weight =  (sf::Uint8) bitmap->buffer[y*bitmap->width + x];
 	int outx = 100 + offset_x/64 + glyph_pos[i].x_offset/64 + glyph->bitmap_left + x;
-	int outy = 100 + offset_y/64 + glyph_pos[i].y_offset/64 - glyph->bitmap_top +y;
+	int outy = 100 + offset_y/64 + glyph_pos[i].y_offset/64 - glyph->bitmap_top + y;
 	sf::Uint8 newColor = 255-weight;
 	sf::Uint8 originalColor= output.getPixel(outx,outy).r; //TODO: this won't work with colored background
-	newColor = (255-weight) * originalColor/255 + weight * newColor/255;
-	
+	newColor = (weight + 255-originalColor) > 255 ? 255 : (weight + 255-originalColor); // Stitching and clamping
+	newColor = 255-newColor;
 	
 	output.setPixel(outx, outy, sf::Color(newColor, newColor, newColor));
 	
       }
-    
+    printf("ft.x:%lf ft.y:%lf hb.x:%f hb.y:%f\n", glyph->advance.x/64.0, glyph->advance.y/64.0, glyph_pos[i].x_advance/64.0, glyph_pos[i].y_advance/64.0);
     offset_x+=glyph_pos[i].x_advance;
     offset_y+=glyph_pos[i].y_advance;
   }
