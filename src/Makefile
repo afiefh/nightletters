@@ -1,0 +1,2 @@
+nightletters:
+	g++ -Wall -Wextra -I/home/afiefh/src/sfml_compiled/include -I /usr/include/freetype2 -o nightletters main.cpp -L/home/afiefh/src/sfml_compiled/lib  -lsfml-graphics -lsfml-window -lsfml-system -lfreetype -lharfbuzz
