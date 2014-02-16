@@ -1,10 +1,10 @@
 cxxflags = -g -Wall -Wextra -std=c++11 -I /usr/include/freetype2 -I/home/afiefh/src/sfml_compiled/include
 linkflags = -lsfml-graphics -lsfml-window -lsfml-system -lfreetype -lharfbuzz -lGL -lGLEW -L/home/afiefh/src/sfml_compiled/lib
 
-nightletters: main.o Font.o ComplexText.o
-	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o ${linkflags} -o nightletters
+nightletters: main.o Font.o ComplexText.o wind.o
+	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o wind.o ${linkflags} -o nightletters
 
-main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp
+main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp
 	g++ -c ${cxxflags} main.cpp -o main.o
 
 Font.o: Font.cpp Font.hpp
@@ -15,6 +15,9 @@ GLCheck.o: GLCheck.cpp GLCheck.hpp
 
 ComplexText.o: ComplexText.cpp ComplexText.hpp
 	g++ -c ${cxxflags}  ComplexText.cpp -o ComplexText.o
+
+wind.o: wind.cpp wind.hpp bezier.hpp
+	g++ -c ${cxxflags}  wind.cpp -o wind.o
 	
 run: nightletters
 	LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters

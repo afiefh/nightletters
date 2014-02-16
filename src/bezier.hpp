@@ -1,9 +1,6 @@
-
+#ifndef __BEZIER_HPP__
+#define __BEZIER_HPP__
 using sf::Vector2f;
-
-float distance(Vector2f v) { 
-  return sqrt(v.x * v.x + v.y * v.y);
-}
 
 class BezierSegment {
 public:
@@ -13,6 +10,10 @@ public:
   virtual Vector2f getPoint(float t) const = 0; // 0 < t < 1
   float getLength() const { return m_length; }
 protected:
+  float distance(Vector2f v) { 
+    return sqrt(v.x * v.x + v.y * v.y);
+  }
+  
   float m_length;
 };
 
@@ -59,7 +60,10 @@ public:
   }
   
   Vector2f getPoint(float t) const {
-    //TODO: deal with values >1 or <0
+    if (m_segments.size() == 0) {
+      throw std::runtime_error("Tried to get a point of a curve with zero segments");
+    }
+    
     if (t <=0 ) {
       float negativeLength = t * m_length;
       float newPercentage = negativeLength / m_segments[0]->getLength();
@@ -81,7 +85,8 @@ public:
       }
       accumulatedLength += length;
     }
-    throw t; // BUG
+    
+    throw std::runtime_error("For some reason we reached an undefined state in the function BezierCurve::getPoint"); // BUG if you reach this!
   }
   
   void reset() {
@@ -95,3 +100,5 @@ private:
   float                       m_length;
   std::vector<BezierSegment*> m_segments;
 };
+
+#endif // __BEZIER_HPP__
