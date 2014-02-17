@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Audio.hpp>
 
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
@@ -14,7 +15,33 @@
 #include <stdio.h>
 #include <cmath>
 
+#include <jsoncpp/json/json.h>
+#include <fstream>
+#include <algorithm>
 using namespace std;
+
+struct SoundData {
+  sf::String  name;
+  std::string filename;
+};
+
+vector<SoundData> readJsonFile(const char* filename) {
+  Json::Value root;
+  Json::Reader reader;
+  
+  ifstream ifs(filename);
+  
+  bool success = reader.parse(ifs, root, false);
+  if(!success) throw "Error reading json";
+  
+  vector<SoundData> result;
+  for(auto& sound : root["alphabet"]) {
+    std::string name = sound["name"].asString();
+    std::string file = sound["file"].asString();
+    result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file} ) ;
+  }
+  return result;
+}
 
 int main() 
 {
@@ -33,6 +60,23 @@ int main()
   text.setPosition(sf::Vector2f(50,50));
   text.setString(s);
   text.setFont(mf);
+  
+  
+  vector<SoundData> sounds(readJsonFile("arabic.json"));
+  random_shuffle(sounds.begin(), sounds.end());
+  
+  s = sounds[0].name;
+  text.setString(s);
+  
+  
+  
+  sf::SoundBuffer buffer;
+  if (!buffer.loadFromFile(sounds[0].filename))
+    throw("failed to load sound");
+
+  sf::Sound sound;
+  sound.setBuffer(buffer);
+  sound.play();
   
   // The main loop - ends as soon as the window is closed
   while (window.isOpen())
