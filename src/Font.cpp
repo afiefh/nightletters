@@ -32,7 +32,7 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
-#include <freetype/ftstroke.h>
+#include <freetype2/ftstroke.h>
 #include <cstdlib>
 #include <cstring>
 
@@ -65,7 +65,7 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Font::Font() :
+ComplexFont::ComplexFont() :
 m_library  (NULL),
 m_face     (NULL),
 m_streamRec(NULL),
@@ -77,7 +77,7 @@ m_info	   ()
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(const Font& copy) :
+ComplexFont::ComplexFont(const ComplexFont& copy) :
 m_library    (copy.m_library),
 m_face       (copy.m_face),
 m_streamRec  (copy.m_streamRec),
@@ -95,14 +95,14 @@ m_pixelBuffer(copy.m_pixelBuffer)
 
 
 ////////////////////////////////////////////////////////////
-Font::~Font()
+ComplexFont::~ComplexFont()
 {
     cleanup();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromFile(const std::string& filename)
+bool ComplexFont::loadFromFile(const std::string& filename)
 {
     // Cleanup the previous resources
     cleanup();
@@ -145,7 +145,7 @@ bool Font::loadFromFile(const std::string& filename)
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
+bool ComplexFont::loadFromMemory(const void* data, std::size_t sizeInBytes)
 {
     // Cleanup the previous resources
     cleanup();
@@ -188,7 +188,7 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
 
 
 ////////////////////////////////////////////////////////////
-bool Font::loadFromStream(InputStream& stream)
+bool ComplexFont::loadFromStream(InputStream& stream)
 {
     // Cleanup the previous resources
     cleanup();
@@ -251,14 +251,14 @@ bool Font::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-const Font::Info& Font::getInfo() const
+const ComplexFont::Info& ComplexFont::getInfo() const
 {
 	return m_info;
 }
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
+const Glyph& ComplexFont::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
 {
     FT_Face face = static_cast<FT_Face>(m_face);
     Uint32 glyphIndex = FT_Get_Char_Index(face, codePoint);
@@ -267,7 +267,7 @@ const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool b
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& Font::getGlyphByIndex(Uint32 index, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
+const Glyph& ComplexFont::getGlyphByIndex(Uint32 index, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
 {
     // Get the page corresponding to the character size
     GlyphTable& glyphs = m_pages[characterSize].glyphs;
@@ -292,7 +292,7 @@ const Glyph& Font::getGlyphByIndex(Uint32 index, unsigned int characterSize, boo
 
 
 ////////////////////////////////////////////////////////////
-int Font::getKerning(Uint32 first, Uint32 second, unsigned int characterSize) const
+int ComplexFont::getKerning(Uint32 first, Uint32 second, unsigned int characterSize) const
 {
     // Special case where first or second is 0 (null character)
     if (first == 0 || second == 0)
@@ -322,7 +322,7 @@ int Font::getKerning(Uint32 first, Uint32 second, unsigned int characterSize) co
 
 
 ////////////////////////////////////////////////////////////
-int Font::getLineSpacing(unsigned int characterSize) const
+int ComplexFont::getLineSpacing(unsigned int characterSize) const
 {
     FT_Face face = static_cast<FT_Face>(m_face);
 
@@ -338,16 +338,16 @@ int Font::getLineSpacing(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-const Texture& Font::getTexture(unsigned int characterSize) const
+const Texture& ComplexFont::getTexture(unsigned int characterSize) const
 {
     return m_pages[characterSize].texture;
 }
 
 
 ////////////////////////////////////////////////////////////
-Font& Font::operator =(const Font& right)
+ComplexFont& ComplexFont::operator =(const ComplexFont& right)
 {
-    Font temp(right);
+    ComplexFont temp(right);
 
     std::swap(m_library,     temp.m_library);
     std::swap(m_face,        temp.m_face);
@@ -360,7 +360,7 @@ Font& Font::operator =(const Font& right)
 
 
 ////////////////////////////////////////////////////////////
-void Font::cleanup()
+void ComplexFont::cleanup()
 {
     // Check if we must destroy the FreeType pointers
     if (m_refCount)
@@ -399,7 +399,7 @@ void Font::cleanup()
 
 
 ////////////////////////////////////////////////////////////
-Glyph Font::loadGlyph(Uint32 index, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
+Glyph ComplexFont::loadGlyph(Uint32 index, unsigned int characterSize, bool bold, FT_UInt strokeWidth) const
 {
     // The glyph to return
     Glyph glyph;
@@ -531,7 +531,7 @@ Glyph Font::loadGlyph(Uint32 index, unsigned int characterSize, bool bold, FT_UI
 
 
 ////////////////////////////////////////////////////////////
-IntRect Font::findGlyphRect(Page& page, unsigned int width, unsigned int height) const
+IntRect ComplexFont::findGlyphRect(Page& page, unsigned int width, unsigned int height) const
 {
     // Find the line that fits well the glyph
     Row* row = NULL;
@@ -599,7 +599,7 @@ IntRect Font::findGlyphRect(Page& page, unsigned int width, unsigned int height)
 
 
 ////////////////////////////////////////////////////////////
-bool Font::setCurrentSize(unsigned int characterSize) const
+bool ComplexFont::setCurrentSize(unsigned int characterSize) const
 {
     // FT_Set_Pixel_Sizes is an expensive function, so we must call it
     // only when necessary to avoid killing performances
@@ -619,7 +619,7 @@ bool Font::setCurrentSize(unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-Font::Page::Page() :
+ComplexFont::Page::Page() :
 nextRow(3)
 {
     // Make sure that the texture is initialized by default

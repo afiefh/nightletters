@@ -22,8 +22,8 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_FONT_HPP
-#define SFML_FONT_HPP
+#ifndef _FONT_HPP
+#define _FONT_HPP
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -47,7 +47,7 @@ class InputStream;
 /// \brief Class for loading and manipulating character fonts
 ///
 ////////////////////////////////////////////////////////////
-class Font
+class ComplexFont
 {
 public :
 
@@ -68,7 +68,7 @@ public :
     /// This constructor defines an empty font
     ///
     ////////////////////////////////////////////////////////////
-    Font();
+    ComplexFont();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -76,7 +76,7 @@ public :
     /// \param copy Instance to copy
     ///
     ////////////////////////////////////////////////////////////
-    Font(const Font& copy);
+    ComplexFont(const ComplexFont& copy);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -84,7 +84,7 @@ public :
     /// Cleans up all the internal resources used by the font
     ///
     ////////////////////////////////////////////////////////////
-    ~Font();
+    ~ComplexFont();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the font from a file
@@ -226,7 +226,7 @@ public :
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    Font& operator =(const Font& right);
+    ComplexFont& operator =(const ComplexFont& right);
 
     friend class ComplexText;
 private :
@@ -341,7 +341,7 @@ private :
 } // namespace sf
 
 
-#endif // SFML_FONT_HPP
+#endif // _FONT_HPP
 
 
 ////////////////////////////////////////////////////////////

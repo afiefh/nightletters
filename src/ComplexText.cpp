@@ -59,7 +59,7 @@ void ComplexText::SetDirection(hb_direction_t dir)
 
 
 ////////////////////////////////////////////////////////////
-ComplexText::ComplexText(const String& string, const Font& font, unsigned int characterSize) : 
+ComplexText::ComplexText(const String& string, const ComplexFont& font, unsigned int characterSize) : 
 m_dir          (HB_DIRECTION_INVALID), 
 m_script       (HB_SCRIPT_INVALID),
 m_string       (string),
@@ -318,7 +318,7 @@ void ComplexText::setString(const String& string)
 
 
 ////////////////////////////////////////////////////////////
-void ComplexText::setFont(const Font& font)
+void ComplexText::setFont(const ComplexFont& font)
 {
     if (m_font != &font)
     {
@@ -370,7 +370,7 @@ const String& ComplexText::getString() const
 
 
 ////////////////////////////////////////////////////////////
-const Font* ComplexText::getFont() const
+const ComplexFont* ComplexText::getFont() const
 {
     return m_font;
 }

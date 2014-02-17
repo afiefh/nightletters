@@ -67,7 +67,7 @@ public:
     /// \param characterSize  Base size of characters, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    ComplexText(const String& string, const Font& font, unsigned int characterSize = 30);
+    ComplexText(const String& string, const ComplexFont& font, unsigned int characterSize = 30);
     
     ////////////////////////////////////////////////////////////
     /// \brief Set the direction of the language to be rendered
@@ -147,7 +147,7 @@ public:
     /// \see getFont
     ///
     ////////////////////////////////////////////////////////////
-    void setFont(const Font& font);
+    void setFont(const ComplexFont& font);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the character size
@@ -218,7 +218,7 @@ public:
     /// \see setFont
     ///
     ////////////////////////////////////////////////////////////
-    const Font* getFont() const;
+    const ComplexFont* getFont() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the character size
@@ -306,7 +306,7 @@ protected :
     // Member data
     ////////////////////////////////////////////////////////////
     String        m_string;        ///< String to display
-    const Font*   m_font;          ///< Font used to display the string
+    const ComplexFont*   m_font;          ///< Font used to display the string
     unsigned int  m_characterSize; ///< Base size of characters, in pixels
     Uint32        m_style;         ///< Text style (see Style enum)
     Color         m_color;         ///< Text color
