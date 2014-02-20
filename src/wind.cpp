@@ -76,9 +76,9 @@ void Wind::start(const sf::Vector2f& startPos, const sf::Vector2f& midPos, const
     
   if (swirl) {
     //basic points that the path will move along, in the middle we'll have a little swirl
-    
-    sf::Vector2f swirlBottom = midPos  + sf::Vector2f(rand()%200-100, rand()%200-100);
     float radius = 30 + rand()%20;
+    sf::Vector2f swirlBottom = midPos  + sf::Vector2f(rand()%200-100, rand()%200-100);
+    swirlBottom.y = std::max(radius*2, swirlBottom.y);
     // now since we know that the radius of the swirl is 20 we can draw the swirl out:
     sf::Vector2f swirlCenter = swirlBottom - sf::Vector2f(0, radius); //temporary to make math more intuitive
     

@@ -42,14 +42,14 @@ public:
   Lightning() : m_vertices(sf::Quads){
     m_texture.loadFromFile("../graphic/lightning2.png");
     m_bolt.push_back(sf::Vector2f(600,100));
-    m_bolt.push_back(sf::Vector2f(600,600));
+    m_bolt.push_back(sf::Vector2f(600,500));
     generateLightning();
   }
 
   void generateLightning() {
     srand(time(NULL));
     vector<sf::Vector2f> tmpBolt;
-    for (size_t subdivision=0;subdivision<7;subdivision++) {
+    for (size_t subdivision=0;subdivision<6;subdivision++) {
       tmpBolt.clear();
       tmpBolt.push_back(m_bolt[0]);
       for (size_t i=1; i<m_bolt.size();i++) {
@@ -66,7 +66,7 @@ public:
     }
     
     for (size_t i=1; i<m_bolt.size();i++) {
-      const float width = 80;
+      const float width = 40;
       
       sf::Vector2f dir = m_bolt[i] - m_bolt[i-1];
       dir = dir / getLength(dir) * (width/2); //we need with for the length of the cap
@@ -186,9 +186,7 @@ int main()
 	  SoundData tmp = sounds.front();
 	  sounds.push_back(tmp);
 	  sounds.pop_front();
-	  std::cout << sound.getStatus() << std::endl;
 	  sound.stop();
-	      std::cout << "playing:" << sounds.front().filename << std::endl;
 		  sound.resetBuffer();
 		  if (!buffer.loadFromFile(sounds.front().filename))
 			throw("failed to load sound");
@@ -224,9 +222,13 @@ int main()
     window.draw(nightsky);
     window.draw(text);
     framebuffer.clear(sf::Color(0,0,0,0));
-    framebuffer.draw(lightning, sf::BlendMax);
+    glBlendEquation(GL_MAX);
+    framebuffer.draw(lightning);
+    framebuffer.display();
+    glBlendEquation(GL_FUNC_ADD);
     sf::Sprite lightningSprite(framebuffer.getTexture());
     window.draw(lightningSprite);
+    //window.draw(lightning);
     window.draw(inputDisplay);
     
     // End the current frame and display its contents on screen
