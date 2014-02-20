@@ -3,7 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Audio.hpp>
-
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
 
@@ -37,96 +36,82 @@ sf::Vector2f bezier3(const sf::Vector2f & p0, const sf::Vector2f & p1, const sf:
   return (1-t) * ((1-t)*p0 + 2*t*p1) + t*t*p2;
 }
 
-struct LightningNode {
-  LightningNode(float length, float angle) : m_length(length), m_angle(angle), m_right(NULL), m_left(NULL) {}
-  float m_length;
-  float m_angle;
-  
-  LightningNode * m_right;
-  LightningNode * m_left;
-};
 const float PI = 3.14159265359f;
 class Lightning : public sf::Drawable, public sf::Transformable{
 public:
   Lightning() : m_vertices(sf::Quads){
-    std::cout << "Lightning constructed" << std::endl;
-    m_texture.loadFromFile("../graphic/lightning.png");
+    m_texture.loadFromFile("../graphic/lightning2.png");
+    m_bolt.push_back(sf::Vector2f(600,100));
+    m_bolt.push_back(sf::Vector2f(600,600));
     generateLightning();
   }
 
   void generateLightning() {
-    LightningNode node1(100, 0);
-    LightningNode node2(100, 45);
-    LightningNode node3(100, -45);
-    node1.m_right = &node2;
-    node1.m_left  = &node3;
-    std::pair<sf::Vector2f, sf::Vector2f> currentEnd(sf::Vector2f(90,100), sf::Vector2f(110,100));
-    drawLightningSegment(90, 20, node1, currentEnd);
+    srand(time(NULL));
+    vector<sf::Vector2f> tmpBolt;
+    for (size_t subdivision=0;subdivision<7;subdivision++) {
+      tmpBolt.clear();
+      tmpBolt.push_back(m_bolt[0]);
+      for (size_t i=1; i<m_bolt.size();i++) {
+        //for any subsequent point
+        float division = (rand()%20 + 40) / 100.0f;
+        sf::Vector2f direction = m_bolt[i] - m_bolt[i-1];
+        sf::Vector2f perp = getPerpendicularDir(direction);
+        float length = getLength(direction);
+        sf::Vector2f midpoint = m_bolt[i-1] + division*(m_bolt[i] - m_bolt[i-1]) + (rand()%2-1) * 0.35f*length*perp;
+        tmpBolt.push_back(midpoint);
+        tmpBolt.push_back(m_bolt[i]);
+      }
+      std::swap(m_bolt, tmpBolt);
+    }
+    
+    for (size_t i=1; i<m_bolt.size();i++) {
+      const float width = 80;
+      
+      sf::Vector2f dir = m_bolt[i] - m_bolt[i-1];
+      dir = dir / getLength(dir) * (width/2); //we need with for the length of the cap
+      sf::Vector2f perp = getPerpendicularDir(dir)*width; //twice as much as the length
+      
+      //pre cap
+      m_vertices.append(sf::Vertex( m_bolt[i-1] + perp, sf::Vector2f(0,0) ));
+      m_vertices.append(sf::Vertex( m_bolt[i-1] - perp, sf::Vector2f(0,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[i-1] - dir - perp, sf::Vector2f(64,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[i-1] - dir + perp, sf::Vector2f(64,0) ));
+      
+      // middle
+      m_vertices.append(sf::Vertex( m_bolt[i-1] + perp, sf::Vector2f(0,0) ));
+      m_vertices.append(sf::Vertex( m_bolt[i-1] - perp, sf::Vector2f(0,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[ i ] - perp, sf::Vector2f(1,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[ i ] + perp, sf::Vector2f(1,0) ));
+      
+      m_vertices.append(sf::Vertex( m_bolt[ i ] + perp, sf::Vector2f(0,0) ));
+      m_vertices.append(sf::Vertex( m_bolt[ i ] - perp, sf::Vector2f(0,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[ i ] + dir - perp, sf::Vector2f(64,128) ));
+      m_vertices.append(sf::Vertex( m_bolt[ i ] + dir + perp, sf::Vector2f(64,0) ));
+    }
   }
   
   void draw(sf::RenderTarget& target, sf::RenderStates states) const
   {
     states.transform *= getTransform();
-    states.texture = &m_texture;
+    states.texture    = &m_texture;
     target.draw(m_vertices, states);
   }
 
 private:
-  sf::Vector2f getPerpendicularDir(sf::Vector2f dir) { //TODO: put it in a common place so wind and lightning can use it
+  sf::Vector2f getPerpendicularDir(sf::Vector2f dir) const { //TODO: put it in a common place so wind and lightning can use it
     float length = sqrt(dir.x * dir.x + dir.y * dir.y);
     sf::Vector2f perpDir(-dir.y / length, dir.x / length);
     
     return perpDir;
   }
-  
-  //prevEnd = (left Vertex, right Vertex)
-  void drawLightningSegment(float initialAngle, float width, const LightningNode& root, const std::pair<sf::Vector2f, sf::Vector2f> & prevEnd) {
-    float currentAngle = initialAngle+root.m_angle;
-    float perpAngle    = currentAngle + 90;
-    auto dir  = sf::Vector2f(cos(currentAngle * PI/180.f), sin(currentAngle * PI/180.f));
-    auto perp = sf::Vector2f(cos(perpAngle * PI/180.f), sin(perpAngle * PI/180.f)) * width;
-    
-    Vector2f beginPos;
-    if (root.m_angle >= 0) { //we're going to the left
-      beginPos = prevEnd.second; //base our line on the left vertex
-      perp = -perp; //grow to the right
-    } else {
-      beginPos = prevEnd.first; //base on the right vertex and grow to the left
-    }
-
-    m_vertices.append(sf::Vertex( beginPos, sf::Vector2f(0,  0) ));
-    m_vertices.append(sf::Vertex( beginPos + perp, sf::Vector2f(32, 1) ));
-
-    auto rightEdge =  beginPos + dir*root.m_length;
-    auto leftEdge = beginPos + perp + dir*root.m_length;
-    
-    const std::pair<sf::Vector2f, sf::Vector2f> currentEnd(leftEdge, rightEdge);
-    m_vertices.append(sf::Vertex( leftEdge, sf::Vector2f(32, 0) ));
-    m_vertices.append(sf::Vertex( rightEdge, sf::Vector2f(0,  1) ));
-    
-    // decide on the widths of the children
-    float width1 = width, width2 = width;
-    if (root.m_right != NULL && root.m_left) {
-      const float alpha =  root.m_right->m_angle;
-      const float beta =  -root.m_left->m_angle;
-      const float gamma = 180.0f - (alpha + beta);
-      cout << "a=" <<alpha<< " b=" << beta << " g=" << gamma <<endl;
-      width1 = width * sin(90 - beta ) / sin(gamma);
-      width2 = width * sin(90 - alpha) / sin(gamma);
-    }
-    
-    // build the joint
-    if (root.m_right != NULL && root.m_left) {
-      auto leftVert  = sf::Vertex(currentEnd.first, sf::Vector(0, 0));
-      auto rightVert = sf::Vertex(currentEnd.first, sf::Vector(32, 0));
-    }
-    
-    if (root.m_right != NULL) drawLightningSegment(currentAngle, width2, *root.m_right, currentEnd);
-    if (root.m_left  != NULL) drawLightningSegment(currentAngle, width1, *root.m_left, currentEnd);
+  float getLength(sf::Vector2f vec) const {
+    return sqrt(vec.x * vec.x + vec.y * vec.y);
   }
-
-  sf::Texture     m_texture;
-  sf::VertexArray m_vertices;
+  
+  sf::Texture           m_texture;
+  vector<sf::Vector2f>  m_bolt;
+  sf::VertexArray       m_vertices;
 };
 
 struct SoundData {
@@ -158,7 +143,10 @@ int main()
 {
   sf::RenderWindow window(sf::VideoMode(800, 600), "Nightletters");
   window.setFramerateLimit(60);
-
+  sf::RenderTexture framebuffer;
+  framebuffer.create(800,600);
+  
+  
   Nightsky nightsky(sf::Vector2i(800, 600));
   Lightning lightning;
   //text stuff
@@ -235,7 +223,10 @@ int main()
     // Draw some graphical entities
     window.draw(nightsky);
     window.draw(text);
-    window.draw(lightning);
+    framebuffer.clear(sf::Color(0,0,0,0));
+    framebuffer.draw(lightning, sf::BlendMax);
+    sf::Sprite lightningSprite(framebuffer.getTexture());
+    window.draw(lightningSprite);
     window.draw(inputDisplay);
     
     // End the current frame and display its contents on screen
