@@ -32,7 +32,14 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
+
+#if defined(_WIN64) || defined(_WIN32)
 #include <freetype2/ftstroke.h>
+#else
+#include <freetype/ftstroke.h>
+#endif
+
+
 #include <cstdlib>
 #include <cstring>
 
