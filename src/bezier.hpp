@@ -1,5 +1,9 @@
 #ifndef __BEZIER_HPP__
 #define __BEZIER_HPP__
+
+#include <stdexcept>
+#include <SFML/Graphics.hpp>
+
 using sf::Vector2f;
 
 class BezierSegment {

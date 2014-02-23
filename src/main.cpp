@@ -8,6 +8,7 @@
 
 #include "Nightsky.hpp"
 #include "StrokedText.hpp"
+#include "lightning.hpp"
 #include <cwchar>
 #include <iostream>
 #include <cassert>
@@ -36,84 +37,6 @@ sf::Vector2f bezier3(const sf::Vector2f & p0, const sf::Vector2f & p1, const sf:
   return (1-t) * ((1-t)*p0 + 2*t*p1) + t*t*p2;
 }
 
-const float PI = 3.14159265359f;
-class Lightning : public sf::Drawable, public sf::Transformable{
-public:
-  Lightning() : m_vertices(sf::Quads){
-    m_texture.loadFromFile("../graphic/lightning2.png");
-    m_bolt.push_back(sf::Vector2f(600,100));
-    m_bolt.push_back(sf::Vector2f(600,500));
-    generateLightning();
-  }
-
-  void generateLightning() {
-    srand(time(NULL));
-    vector<sf::Vector2f> tmpBolt;
-    for (size_t subdivision=0;subdivision<6;subdivision++) {
-      tmpBolt.clear();
-      tmpBolt.push_back(m_bolt[0]);
-      for (size_t i=1; i<m_bolt.size();i++) {
-        //for any subsequent point
-        float division = (rand()%20 + 40) / 100.0f;
-        sf::Vector2f direction = m_bolt[i] - m_bolt[i-1];
-        sf::Vector2f perp = getPerpendicularDir(direction);
-        float length = getLength(direction);
-        sf::Vector2f midpoint = m_bolt[i-1] + division*(m_bolt[i] - m_bolt[i-1]) + (rand()%2-1) * 0.35f*length*perp;
-        tmpBolt.push_back(midpoint);
-        tmpBolt.push_back(m_bolt[i]);
-      }
-      std::swap(m_bolt, tmpBolt);
-    }
-    
-    for (size_t i=1; i<m_bolt.size();i++) {
-      const float width = 40;
-      
-      sf::Vector2f dir = m_bolt[i] - m_bolt[i-1];
-      dir = dir / getLength(dir) * (width/2); //we need with for the length of the cap
-      sf::Vector2f perp = getPerpendicularDir(dir)*width; //twice as much as the length
-      
-      //pre cap
-      m_vertices.append(sf::Vertex( m_bolt[i-1] + perp, sf::Vector2f(0,0) ));
-      m_vertices.append(sf::Vertex( m_bolt[i-1] - perp, sf::Vector2f(0,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[i-1] - dir - perp, sf::Vector2f(64,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[i-1] - dir + perp, sf::Vector2f(64,0) ));
-      
-      // middle
-      m_vertices.append(sf::Vertex( m_bolt[i-1] + perp, sf::Vector2f(0,0) ));
-      m_vertices.append(sf::Vertex( m_bolt[i-1] - perp, sf::Vector2f(0,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[ i ] - perp, sf::Vector2f(1,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[ i ] + perp, sf::Vector2f(1,0) ));
-      
-      m_vertices.append(sf::Vertex( m_bolt[ i ] + perp, sf::Vector2f(0,0) ));
-      m_vertices.append(sf::Vertex( m_bolt[ i ] - perp, sf::Vector2f(0,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[ i ] + dir - perp, sf::Vector2f(64,128) ));
-      m_vertices.append(sf::Vertex( m_bolt[ i ] + dir + perp, sf::Vector2f(64,0) ));
-    }
-  }
-  
-  void draw(sf::RenderTarget& target, sf::RenderStates states) const
-  {
-    states.transform *= getTransform();
-    states.texture    = &m_texture;
-    target.draw(m_vertices, states);
-  }
-
-private:
-  sf::Vector2f getPerpendicularDir(sf::Vector2f dir) const { //TODO: put it in a common place so wind and lightning can use it
-    float length = sqrt(dir.x * dir.x + dir.y * dir.y);
-    sf::Vector2f perpDir(-dir.y / length, dir.x / length);
-    
-    return perpDir;
-  }
-  float getLength(sf::Vector2f vec) const {
-    return sqrt(vec.x * vec.x + vec.y * vec.y);
-  }
-  
-  sf::Texture           m_texture;
-  vector<sf::Vector2f>  m_bolt;
-  sf::VertexArray       m_vertices;
-};
-
 struct SoundData {
   sf::String  name;
   std::string filename;
@@ -141,14 +64,16 @@ list<SoundData> readJsonFile(const char* filename) {
 
 int main() 
 {
+  srand(time(NULL));
   sf::RenderWindow window(sf::VideoMode(800, 600), "Nightletters");
   window.setFramerateLimit(60);
   sf::RenderTexture framebuffer;
   framebuffer.create(800,600);
+  sf::Sprite lightningSprite(framebuffer.getTexture());
   
   
   Nightsky nightsky(sf::Vector2i(800, 600));
-  Lightning lightning;
+  LightningBolt lightning(sf::Vector2f(500,0), sf::Vector2f(500,500), 4, sf::Vector2i(300,0));
   //text stuff
   sf::ComplexFont mf;
   mf.loadFromFile("amiri-regular.ttf");
@@ -214,7 +139,7 @@ int main()
     }
     
     nightsky.update();
-    
+    lightning.update();
     // Clear the whole window before rendering a new frame
     window.clear(sf::Color(255,255,255));
     
@@ -226,7 +151,6 @@ int main()
     framebuffer.draw(lightning);
     framebuffer.display();
     glBlendEquation(GL_FUNC_ADD);
-    sf::Sprite lightningSprite(framebuffer.getTexture());
     window.draw(lightningSprite);
     //window.draw(lightning);
     window.draw(inputDisplay);
