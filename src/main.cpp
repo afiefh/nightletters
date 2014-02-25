@@ -1,4 +1,5 @@
-﻿
+﻿#include <GL/glew.h>
+
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
@@ -70,7 +71,12 @@ int main()
   sf::RenderTexture framebuffer;
   framebuffer.create(800,600);
   sf::Sprite lightningSprite(framebuffer.getTexture());
-  
+
+  GLenum err = glewInit();
+  if (GLEW_OK != err)
+  {
+    throw std::runtime_error("Couldn't initialize GLEW");
+  }  
   
   Nightsky nightsky(sf::Vector2i(800, 600));
   LightningBolt lightning(sf::Vector2f(500,0), sf::Vector2f(500,500), 4, sf::Vector2i(300,0));
