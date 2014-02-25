@@ -2,6 +2,7 @@
 #define __UTILITIES_HPP__
 #include <iostream>
 #include <vector>
+#include <SFML/Graphics.hpp>
 std::ostream& operator<<(std::ostream& o, const sf::Vector2f & v);
 
 std::ostream& operator<<(std::ostream& o, const sf::Vector2i & v);

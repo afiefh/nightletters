@@ -1,3 +1,6 @@
+#include "utilities.hpp"
+using namespace std;
+
 ostream& operator<<(ostream& o, const sf::Vector2f & v) {
   return o << "V2f[" << v.x << ", " << v.y << "]";
 }
