@@ -16,11 +16,11 @@ struct PointMass {
 
 class SoftBody : public sf::Drawable, public sf::Transformable {
 public:
-  SoftBody() : m_drag(0.9), m_vertices(sf::Points) {
+  SoftBody() : m_drag(0.95), m_vertices(sf::Points) {
     sf::Vector2f origin(0.0f,0.0f);
     for (size_t h=0; h < m_tesselationY; h++) {
-      for (size_t h=0; h < m_tesselationX; h++) {
-        m_masses.push_back( PointMass{origin, sf::Vector2f(0,0), sf::Vector2f(0,0), false} );
+      for (size_t w=0; w < m_tesselationX; w++) {
+        m_masses.push_back( PointMass{origin, sf::Vector2f(0,0), sf::Vector2f(0,0), h == m_tesselationY-1} );
         origin.x += width/m_tesselationX;
       }
       origin.y += height/m_tesselationY;
@@ -55,15 +55,20 @@ public:
         if (w != m_tesselationX-1) acceleration += CalcAcceleration(m_masses[self], m_masses[right], restDistanceX);
         if (h != 0)                acceleration += CalcAcceleration(m_masses[self], m_masses[up], restDistanceY);
         if (h != m_tesselationY-1) acceleration += CalcAcceleration(m_masses[self], m_masses[down], restDistanceY);
+        acceleration *= 10.0f;
         
-        m_masses[self].acceleration = acceleration/2.0f;
+        if (h != m_tesselationY-1) acceleration -= 0.5f * sf::Vector2f(m_masses[self].position.x - m_masses[down].position.x, 0); //try to return to the same area in height
+        
+        m_masses[self].acceleration = acceleration;
       }
     }
     
+    const float timestep = 0.05f;
     //update the position
     for(auto& pointMass : m_masses) {
-      pointMass.velocity = pointMass.acceleration * 0.05f + pointMass.velocity * m_drag;
-      pointMass.position += pointMass.velocity * 0.05f;
+      if (pointMass.pinned) continue;
+      pointMass.velocity = pointMass.acceleration * 0.5f * timestep + pointMass.velocity * m_drag;
+      pointMass.position += pointMass.velocity * timestep;
     }
     
     m_vertices.clear();
@@ -78,8 +83,16 @@ public:
     target.draw(m_vertices, states);
   }
   
+  void velocityRight(float left, float right, float top, float bottom, float speed) {
+    for(auto& pointMass : m_masses) {
+      if ( pointMass.position.x < right && pointMass.position.x > left && 
+           pointMass.position.y < bottom && pointMass.position.y > top) {
+        pointMass.velocity = (0.9f * pointMass.velocity + 0.1f * sf::Vector2f(speed,0));
+      }
+    }
+  }
+  
   void pushRight(float velocity, float acceleration) {
-    std::cout << "Set velocity" << velocity << "acceleration=" << acceleration << std::endl;
     m_masses[getIndex(1,1)].acceleration.y += acceleration;
     m_masses[getIndex(1,1)].velocity.y     += velocity;
   }
@@ -95,16 +108,20 @@ private:
   sf::VertexArray       m_vertices;
 };
 
+const float windWidth = 200;
 int main()
 {
   bool update = false;
+  sf::RectangleShape rectangle(sf::Vector2f(200, 200));
+  rectangle.setFillColor(sf::Color(133,133,133,50));
   srand(time(NULL));
   sf::RenderWindow window(sf::VideoMode(800, 600), "Nightletters");
   window.setFramerateLimit(60);
   
   SoftBody softBody;
   softBody.move(20, 20);
-  softBody.pushRight(500, 0);
+  float windLeft = -windWidth;
+  //softBody.pushRight(500, 0);
   while (window.isOpen())
   {
     window.clear(sf::Color::Black);
@@ -116,15 +133,21 @@ int main()
       if (event.type == sf::Event::Closed) {
         window.close();
       } else if (event.type == sf::Event::KeyPressed) {
+        windLeft = -windWidth;
+        rectangle.setPosition(-windWidth,0);
         update = true;
       } else if (event.type == sf::Event::KeyReleased) {
         update = false;
       }
     }
     if (update) {
-      softBody.update();
+      softBody.velocityRight(windLeft, windLeft+windWidth, 0, 200, 10);
+      windLeft += 1;
+      rectangle.move(1,0);
     }
+    softBody.update();
     window.draw(softBody);
+    if (update) window.draw(rectangle);
     
     // End the current frame and display its contents on screen
     window.display();
