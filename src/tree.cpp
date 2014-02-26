@@ -29,57 +29,41 @@ public:
     update();
   }
   
-  inline sf::Vector2f CalcAcceleration(PointMass& self, PointMass& other, float restDistance) {
+  inline sf::Vector2f CalcAcceleration(const PointMass& self, const PointMass& other, float restDistance) const {
     sf::Vector2f diffPos  = self.position - other.position;
     float diffPosLen  = getLength(diffPos);
     return -(diffPosLen  - restDistance) * diffPos/diffPosLen;
   }
-  inline float getLength(sf::Vector2f vec) { return sqrt(vec.x*vec.x  + vec.y*vec.y); }
+  inline float getLength(sf::Vector2f vec) const { return sqrt(vec.x*vec.x  + vec.y*vec.y); }
   inline size_t getIndex(size_t x, size_t y) { return x + y * m_tesselationX; }
   void update() {
     //std::cout << "Process:" << std::endl;
     const float restDistanceX = width  / (float)m_tesselationX;
     const float restDistanceY = height / (float)m_tesselationY;
     
-    for (size_t h = 1; h < m_tesselationY-1; h++) {
-      for (size_t w = 1; w < m_tesselationX-1; w++) {
+    for (size_t h = 0; h < m_tesselationY; h++) {
+      for (size_t w = 0; w < m_tesselationX; w++) {
+        
         size_t self  = getIndex(w    , h    );
         size_t left  = getIndex(w - 1, h    );
         size_t right = getIndex(w + 1, h    );
         size_t up    = getIndex(w    , h - 1);
         size_t down  = getIndex(w    , h + 1);
-        
-        sf::Vector2f diffLeft  = m_masses[self].position - m_masses[left].position;
-        sf::Vector2f diffRight = m_masses[self].position - m_masses[right].position;
-        //std::cout << "DiffLeft = " << diffLeft << " = " << m_masses[self].position << " - " << m_masses[left].position << std::endl;
-        //std::cout << "DiffRight = " << diffLeft << " = " << m_masses[self].position << " - " << m_masses[right].position << std::endl;
-        
-        sf::Vector2f diffUp    = m_masses[self].position - m_masses[up].position;
-        sf::Vector2f diffDown  = m_masses[self].position - m_masses[down].position;
-        
-        float lenLeft  = getLength(diffLeft);
-        float lenRight = getLength(diffRight);
-        
-        float lenUp    = getLength(diffUp);
-        float lenDown  = getLength(diffDown);
-        
+
         sf::Vector2f acceleration(0,0);
-        acceleration -= (lenLeft  - restDistanceX) * diffLeft/lenLeft;
-        acceleration -= (lenRight - restDistanceX) * diffRight/lenRight;
-        
-        acceleration -= (lenUp   - restDistanceY) * diffUp/lenUp;
-        acceleration -= (lenDown - restDistanceY) * diffDown/lenDown;
+        if (w != 0)                acceleration += CalcAcceleration(m_masses[self], m_masses[left], restDistanceX);
+        if (w != m_tesselationX-1) acceleration += CalcAcceleration(m_masses[self], m_masses[right], restDistanceX);
+        if (h != 0)                acceleration += CalcAcceleration(m_masses[self], m_masses[up], restDistanceY);
+        if (h != m_tesselationY-1) acceleration += CalcAcceleration(m_masses[self], m_masses[down], restDistanceY);
         
         m_masses[self].acceleration = acceleration/2.0f;
-        //std::cout << "Acceleration: " << w << ", " << h<< ": " << acceleration << std::endl;
-        //std::cout << "left:" << lenLeft << " right" << lenRight << " up:" << lenUp << " down:" << lenDown << std::endl;
       }
     }
     
     //update the position
     for(auto& pointMass : m_masses) {
-      pointMass.velocity = pointMass.acceleration * 0.1f + pointMass.velocity * m_drag;
-      pointMass.position += pointMass.velocity * 0.1f;
+      pointMass.velocity = pointMass.acceleration * 0.05f + pointMass.velocity * m_drag;
+      pointMass.position += pointMass.velocity * 0.05f;
     }
     
     m_vertices.clear();
@@ -120,7 +104,7 @@ int main()
   
   SoftBody softBody;
   softBody.move(20, 20);
-  softBody.pushRight(1000000, 0);
+  softBody.pushRight(500, 0);
   while (window.isOpen())
   {
     window.clear(sf::Color::Black);
