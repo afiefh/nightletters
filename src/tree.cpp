@@ -99,8 +99,8 @@ public:
 private:
   //all the masses are in here
   std::vector<PointMass> m_masses;
-  static const size_t m_tesselationX = 10;
-  static const size_t m_tesselationY = 10;
+  static const size_t m_tesselationX = 40;
+  static const size_t m_tesselationY = 40;
   static const size_t width = 600;
   static const size_t height = 600;
   const float m_drag;
@@ -121,6 +121,7 @@ int main()
   SoftBody softBody;
   softBody.move(20, 20);
   float windLeft = -windWidth;
+  rectangle.setPosition(-windWidth,0);
   //softBody.pushRight(500, 0);
   while (window.isOpen())
   {
@@ -133,8 +134,10 @@ int main()
       if (event.type == sf::Event::Closed) {
         window.close();
       } else if (event.type == sf::Event::KeyPressed) {
+      /*
         windLeft = -windWidth;
         rectangle.setPosition(-windWidth,0);
+      */
         update = true;
       } else if (event.type == sf::Event::KeyReleased) {
         update = false;
