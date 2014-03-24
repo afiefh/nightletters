@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include "utilities.hpp"
+#include "Action.hpp"
 
 const float PI = 3.14159265359f;
 class Lightning : public sf::Drawable, public sf::Transformable {
@@ -71,16 +72,9 @@ public:
     target.draw(m_vertices, states);
   }
 
-  void update(int iteration) {
-    float alpha = m_maxAlpha - iteration;
-    if(alpha < 0) {
-      alpha = 0;
-    }
-    const float normalizedAlpha = (alpha / 255);
-    const float realAlpha = normalizedAlpha*normalizedAlpha*normalizedAlpha*normalizedAlpha * 255;
-    
+  void update(float modifier) {
     for(size_t i = 0; i < m_vertices.getVertexCount(); i++) {
-      m_vertices[i].color.a = realAlpha;
+      m_vertices[i].color.a = m_maxAlpha * modifier;
     }
   }
   
@@ -115,68 +109,27 @@ private:
   int                        m_maxAlpha;
 };
 
-class LightningBolt : public sf::Drawable, public sf::Transformable {
+class LightningBolt : public sf::Drawable, public sf::Transformable, public Action {
 public:
-  LightningBolt(const sf::Vector2f& begin, const sf::Vector2f& end, size_t bolts, sf::Vector2i variance) : m_begin(begin), m_end(end), m_bolts(bolts), m_variance(variance), m_iteration(0) {
-    generateLightnings();
-  }
-  
-  void generateLightnings() {
-    m_lightnings.clear();
-    sf::Vector2f perp = getPerpendicularDir(m_begin - m_end);
-    m_lightnings.push_back(Lightning(m_begin, m_end, perp, 40, 5, 255));
-    for (size_t i = 0; i < m_bolts; i++) {
-      sf::Vector2f midPoint;
-      float width;
-      size_t sourceLightning = rand() % m_lightnings.size();
-      std::tie(midPoint,width) = m_lightnings[sourceLightning].getRandomPoint();
-      int varY = m_variance.y == 0 ? 0 : rand() % m_variance.y;
-      int realY = varY + m_end.y;
-      int varX;
-      if (realY - midPoint.y == 0) {
-        varX = 0;
-      } else {
-        varX = m_variance.x == 0 ? 0 : ((rand() % 2) - 1) * (rand() % (abs(realY - midPoint.y)+1));
-      }
-         
-      sf::Vector2f realEnd(m_end.x + varX, realY);
-      int newAlpha = std::min(m_lightnings[sourceLightning].getMaxAlpha(), 200 + (rand()%55));
-      m_lightnings.push_back(Lightning(midPoint, m_end + sf::Vector2f(varX, varY), perp, width, 5, newAlpha));
-    }
-  }
-  
-  void draw(sf::RenderTarget& target, sf::RenderStates states) const
-  {
-    states.transform *= getTransform();
-    for (auto& lightning : m_lightnings)
-      target.draw(lightning, states);
-  }
-  
-  void update() {
-    m_iteration++;
-    if(m_iteration > 255) {
-      generateLightnings();
-      m_iteration = 0;
-    }
-    for (auto& lightning : m_lightnings)
-      lightning.update(m_iteration);
-    
-  }
+  LightningBolt(const sf::Vector2f& begin, const sf::Vector2f& end, size_t bolts, sf::Vector2i variance);
+  virtual void onStart() { start(); }
+  virtual void onEnd() {}
+  virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+  virtual void update(const sf::Time &dt);
+  virtual void start();
+  virtual bool isFinished() const { return (m_elapsedTime >= 1); }
+  virtual bool isBlocking() const { return true; }
   
 private:
-  sf::Vector2f getPerpendicularDir(sf::Vector2f dir) const { //TODO: put it in a common place so wind and lightning can use it
-    float length = sqrt(dir.x * dir.x + dir.y * dir.y);
-    if (length == 0) throw std::runtime_error("perp of zero vector!");
-    sf::Vector2f perpDir(-dir.y / length, dir.x / length);
-    
-    return perpDir;
-  }
+  void generateLightnings();
+  sf::Vector2f getPerpendicularDir(sf::Vector2f dir) const; //TODO: put it in a common place so wind and lightning can use it
   
   std::vector<Lightning> m_lightnings;
   sf::Vector2f           m_begin, m_end;
   size_t                 m_bolts;
   sf::Vector2i           m_variance;
   int                    m_iteration;
+  float                  m_elapsedTime;
 };
 
 #endif // LIGHTNING_HPP

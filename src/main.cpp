@@ -5,19 +5,20 @@
 #include <SFML/OpenGL.hpp>
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
+#include <list>
 
 #include "Nightsky.hpp"
 #include "StrokedText.hpp"
 #include "lightning.hpp"
 #include "utilities.hpp"
 #include "SoundManager.hpp"
-
+#include "Action.hpp"
 #include <cwchar>
 #include <iostream>
 #include <cassert>
 #include <stdio.h>
 #include <cmath>
-using namespace std;
+#include <functional>
 
 void initializeGlew() {
   GLenum err = glewInit();
@@ -27,8 +28,41 @@ void initializeGlew() {
   }  
 }
 
+class ActionList : public std::list<Action*> {
+public:
+  void update(const sf::Time &dt) {
+    auto it = this->begin();
+    
+    while(it != this->end()) {
+      (*it)->update(dt);
+      if ((*it)->isFinished()) { 
+        (*it)->onEnd();
+        it = this->erase(it); //returns the next element
+        continue; 
+      }
+      if ((*it)->isBlocking()) break;
+      ++it;
+    }
+    
+  }
+};
+
+class SimpleAction : public Action {
+public:
+  SimpleAction(std::function<bool(const sf::Time &dt)> func) : m_func(func), m_finished(false) {}
+  virtual void update(const sf::Time &dt) { m_finished = m_func(dt);}
+  virtual void onStart() {};
+  virtual void onEnd() {};
+  virtual bool isBlocking() const { return false; }
+  virtual bool isFinished() const { return m_finished; }
+private:
+  std::function<bool(const sf::Time &dt)> m_func;
+  bool                                    m_finished;
+};
+
 int main() 
 {
+  ActionList actionList;
   srand(time(NULL));
   sf::RenderWindow window(sf::VideoMode(800, 600), "Nightletters");
   window.setFramerateLimit(60);
@@ -63,16 +97,31 @@ int main()
   soundManager.playSound();
   text.setString(soundManager.getDisplayText());
   
+  bool acceptInput(true);
+  sf::Clock clock;
+  
+  SimpleAction nextLetter(
+  [&soundManager, &text](const sf::Time& /*dt*/)->bool 
+  {
+    soundManager.next();
+    text.setString(soundManager.getDisplayText());
+    soundManager.playSound();
+
+    return true; //finished
+  });
   // The main loop - ends as soon as the window is closed
   while (window.isOpen())
   {
+    sf::Time dt = clock.restart();
     if (inputStr == soundManager.getDisplayText()) {
       inputStr.clear();
-      inputDisplay.setString(inputStr);
-      soundManager.next();
-	  
-      text.setString(soundManager.getDisplayText());
-      soundManager.playSound();
+	    inputDisplay.setString(inputStr);
+      text.setString("");
+      acceptInput = false;
+      lightning.start();
+      actionList.push_back(&lightning);
+      actionList.push_back(&nextLetter);
+      //TODO: will have to think of something for these
     }
     // Event processing
     sf::Event event;
@@ -81,7 +130,7 @@ int main()
       // Request for closing the window
       if (event.type == sf::Event::Closed) {
           window.close();
-      } else if (event.type == sf::Event::TextEntered) {
+      } else if (event.type == sf::Event::TextEntered && acceptInput) {
         if (event.text.unicode == '\b') {
           if (inputStr.getSize() <= 0) continue;
           inputStr.erase(inputStr.getSize() - 1, 1);
@@ -92,21 +141,35 @@ int main()
       }
     }
     
+    
     nightsky.update();
-    lightning.update();
     // Clear the whole window before rendering a new frame
     window.clear(sf::Color(255,255,255));
     
     // Draw some graphical entities
     window.draw(nightsky);
     window.draw(text);
+    actionList.update(dt);
+    //lightning.update(0.0f); //TODO: need to take dt into account at some point
+    acceptInput = actionList.empty();
     framebuffer.clear(sf::Color(0,0,0,0));
     glBlendEquation(GL_MAX);
     framebuffer.draw(lightning);
     framebuffer.display();
     glBlendEquation(GL_FUNC_ADD);
     window.draw(lightningSprite);
-    //window.draw(lightning);
+    /*
+    if (lightning.isFinished() == false) {
+      lightning.update(0.0f); //TODO: need to take dt into account at some point
+      acceptInput = lightning.isFinished() ? true : false;
+      framebuffer.clear(sf::Color(0,0,0,0));
+      glBlendEquation(GL_MAX);
+      framebuffer.draw(lightning);
+      framebuffer.display();
+      glBlendEquation(GL_FUNC_ADD);
+      window.draw(lightningSprite);
+    }*/
+    
     window.draw(inputDisplay);
     
     // End the current frame and display its contents on screen
