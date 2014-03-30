@@ -26,7 +26,7 @@ public:
     m_text->setColor(mix(m_finalForeground, m_initialForeground, percentage),
                      mix(m_finalBackground, m_initialBackground, percentage));
     m_time += dt;
-    std::cout << this << " Percentage: " << percentage << std::endl;
+    //std::cout << this << " Percentage: " << percentage << std::endl;
   }
   
   virtual void onStart() {
@@ -37,6 +37,7 @@ public:
   }
   virtual bool isBlocking() const { return false; }
   virtual bool isFinished() const { return m_time > m_duration; }
+  void restart() {  m_time = sf::seconds(0); }
   
 private:
   StrokedText * const m_text;

@@ -1,10 +1,15 @@
-cxxflags = -g -Wall -Wextra -std=c++11 -I /usr/include/freetype2 -I/home/afiefh/src/sfml_compiled/include
-linkflags = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lfreetype -lharfbuzz -ljsoncpp -lGL -lGLEW -L/home/afiefh/src/sfml_compiled/lib
+ifeq ($(OS),Windows_NT)
+	cxxflags = -g -Wall -Wextra -std=c++11 -I /usr/include/freetype2 -I/home/afiefh/src/sfml_compiled/include -I/usr/include -I/usr/local/include -I/usr/local/include/freetype2
+	linkflags = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lfreetype -lharfbuzz -lopengl32 -lglew32 -ljsoncpp -L/usr/lib -L/usr/local/lib  -L/home/afiefh/src/sfml_compiled/lib
+else
+	cxxflags = -g -Wall -Wextra -std=c++11 -I /usr/include/freetype2 -I/home/afiefh/src/sfml_compiled/include
+	linkflags = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lfreetype -lharfbuzz -ljsoncpp -lGL -lGLEW -L/home/afiefh/src/sfml_compiled/lib
+endif
 
 nightletters: main.o Font.o ComplexText.o wind.o lightning.o
 	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o wind.o lightning.o ${linkflags} -o nightletters
 
-main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp
+main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp Actions.hpp
 	g++ -c ${cxxflags} main.cpp -o main.o
 
 Font.o: Font.cpp Font.hpp

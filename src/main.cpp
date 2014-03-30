@@ -89,26 +89,30 @@ int main()
   bool acceptInput(true);
   sf::Clock clock;
   
-  FadeText inputDisplayFadeOut(&inputDisplay, sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
+  FadeText inputDisplayFadeIn(&inputDisplay, sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
                                               sf::Color(100,100,100), sf::Color::Black,     //final
-                                              sf::seconds(5));
-  FadeText inputDisplayFadeIn(&inputDisplay, sf::Color(100,100,100), sf::Color::Black,      //initial
+                                              sf::seconds(0.5));
+  FadeText inputDisplayFadeOut(&inputDisplay, sf::Color(100,100,100), sf::Color::Black,      //initial
                                              sf::Color(100,100,100,0), sf::Color(0,0,0,0), //final
-                                             sf::seconds(5));
-  FadeText textDisplayFadeOut(&text,         sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
+                                             sf::seconds(0.5));
+  FadeText textDisplayFadeIn(&text,         sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
                                              sf::Color(100,100,100), sf::Color::Black,     //final
-                                             sf::seconds(5));
-  FadeText textDisplayFadeIn(&text,          sf::Color(100,100,100), sf::Color::Black,      //initial
+                                             sf::seconds(0.5));
+  FadeText textDisplayFadeOut(&text,          sf::Color(100,100,100), sf::Color::Black,      //initial
                                              sf::Color(100,100,100,0), sf::Color(0,0,0,0),  //final
-                                             sf::seconds(5));
+                                             sf::seconds(0.5));
                                              
   SimpleAction nextLetter(
-    [&soundManager, &text](const sf::Time& /*dt*/)->bool 
+    [&soundManager, &text, &inputStr, &inputDisplay](const sf::Time& /*dt*/)->bool 
     {
       soundManager.next();
       text.setString(soundManager.getDisplayText());
       soundManager.playSound();
+      
+      inputStr.clear();
+      inputDisplay.setString(inputStr);
 
+      
       return true; //finished
     }
   );
@@ -117,12 +121,14 @@ int main()
   while (window.isOpen())
   {
     sf::Time dt = clock.restart();
-    if (inputStr == soundManager.getDisplayText()) {
-      inputStr.clear();
-	    inputDisplay.setString(inputStr);
-      text.setString("");
+    if (inputStr == soundManager.getDisplayText() && acceptInput) {
       acceptInput = false;
       lightning.start();
+      
+      textDisplayFadeIn.restart();
+      textDisplayFadeOut.restart();
+      inputDisplayFadeIn.restart();
+      inputDisplayFadeOut.restart();
       
       actionList.push_back(&inputDisplayFadeOut);
       actionList.push_back(&textDisplayFadeOut);
@@ -131,6 +137,7 @@ int main()
       actionList.push_back(&inputDisplayFadeIn);
       actionList.push_back(&textDisplayFadeIn);
     }
+    
     // Event processing
     sf::Event event;
     while (window.pollEvent(event))
