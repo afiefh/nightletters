@@ -14,4 +14,17 @@ public:
   virtual bool isFinished() const         = 0;
 };
 
+class SimpleAction : public Action {
+public:
+  SimpleAction(std::function<bool(const sf::Time &dt)> func) : m_func(func), m_finished(false) {}
+  virtual void update(const sf::Time &dt) { m_finished = m_func(dt);}
+  virtual void onStart() {};
+  virtual void onEnd() {};
+  virtual bool isBlocking() const { return false; }
+  virtual bool isFinished() const { return m_finished; }
+private:
+  std::function<bool(const sf::Time &dt)> m_func;
+  bool                                    m_finished;
+};
+
 #endif

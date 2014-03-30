@@ -13,6 +13,7 @@
 #include "utilities.hpp"
 #include "SoundManager.hpp"
 #include "Action.hpp"
+#include "Actions.hpp"
 #include <cwchar>
 #include <iostream>
 #include <cassert>
@@ -25,7 +26,7 @@ void initializeGlew() {
   if (GLEW_OK != err)
   {
     throw std::runtime_error("Couldn't initialize GLEW");
-  }  
+  }
 }
 
 class ActionList : public std::list<Action*> {
@@ -45,19 +46,6 @@ public:
     }
     
   }
-};
-
-class SimpleAction : public Action {
-public:
-  SimpleAction(std::function<bool(const sf::Time &dt)> func) : m_func(func), m_finished(false) {}
-  virtual void update(const sf::Time &dt) { m_finished = m_func(dt);}
-  virtual void onStart() {};
-  virtual void onEnd() {};
-  virtual bool isBlocking() const { return false; }
-  virtual bool isFinished() const { return m_finished; }
-private:
-  std::function<bool(const sf::Time &dt)> m_func;
-  bool                                    m_finished;
 };
 
 int main() 
@@ -86,6 +74,7 @@ int main()
   text.setPosition(sf::Vector2f(50,50));
   text.setFont(mf);
   
+  
   inputDisplay.setCharacterSize (50);
   inputDisplay.setColor(sf::Color(100,100,100), sf::Color::Black);
   inputDisplay.setPosition(sf::Vector2f(200,200));
@@ -100,15 +89,30 @@ int main()
   bool acceptInput(true);
   sf::Clock clock;
   
+  FadeText inputDisplayFadeOut(&inputDisplay, sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
+                                              sf::Color(100,100,100), sf::Color::Black,     //final
+                                              sf::seconds(5));
+  FadeText inputDisplayFadeIn(&inputDisplay, sf::Color(100,100,100), sf::Color::Black,      //initial
+                                             sf::Color(100,100,100,0), sf::Color(0,0,0,0), //final
+                                             sf::seconds(5));
+  FadeText textDisplayFadeOut(&text,         sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
+                                             sf::Color(100,100,100), sf::Color::Black,     //final
+                                             sf::seconds(5));
+  FadeText textDisplayFadeIn(&text,          sf::Color(100,100,100), sf::Color::Black,      //initial
+                                             sf::Color(100,100,100,0), sf::Color(0,0,0,0),  //final
+                                             sf::seconds(5));
+                                             
   SimpleAction nextLetter(
-  [&soundManager, &text](const sf::Time& /*dt*/)->bool 
-  {
-    soundManager.next();
-    text.setString(soundManager.getDisplayText());
-    soundManager.playSound();
+    [&soundManager, &text](const sf::Time& /*dt*/)->bool 
+    {
+      soundManager.next();
+      text.setString(soundManager.getDisplayText());
+      soundManager.playSound();
 
-    return true; //finished
-  });
+      return true; //finished
+    }
+  );
+  
   // The main loop - ends as soon as the window is closed
   while (window.isOpen())
   {
@@ -119,9 +123,13 @@ int main()
       text.setString("");
       acceptInput = false;
       lightning.start();
+      
+      actionList.push_back(&inputDisplayFadeOut);
+      actionList.push_back(&textDisplayFadeOut);
       actionList.push_back(&lightning);
       actionList.push_back(&nextLetter);
-      //TODO: will have to think of something for these
+      actionList.push_back(&inputDisplayFadeIn);
+      actionList.push_back(&textDisplayFadeIn);
     }
     // Event processing
     sf::Event event;
