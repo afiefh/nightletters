@@ -1,6 +1,7 @@
 #ifndef LIGHTNING_HPP
 #define LIGHTNING_HPP
 #include <SFML/Graphics.hpp>
+#include <GL/glew.h>
 #include <vector>
 #include <ctime>
 #include <iostream>
@@ -9,6 +10,7 @@
 #include "Action.hpp"
 
 const float PI = 3.14159265359f;
+const size_t lightningSubdivision = 7;
 class Lightning : public sf::Drawable, public sf::Transformable {
 public:
   Lightning(const sf::Vector2f& begin, const sf::Vector2f& end, sf::Vector2f perp, float widthBegin, float widthEnd, int maxAlpha) : m_vertices(sf::Quads), m_widthBegin(widthBegin), m_widthEnd(widthEnd), m_maxAlpha(maxAlpha) {
@@ -23,7 +25,7 @@ public:
     m_bolt.push_back(end);
     std::vector<sf::Vector2f> tmpBolt;
     
-    for (size_t subdivision=0; subdivision<7; subdivision++) {
+    for (size_t subdivision=0; subdivision<lightningSubdivision; subdivision++) {
       tmpBolt.clear();
       tmpBolt.push_back(m_bolt[0]);
       for (size_t i=1; i<m_bolt.size();i++) {
@@ -45,6 +47,7 @@ public:
       sf::Vector2f dir = m_bolt[i] - m_bolt[i-1];
       dir = dir / getLength(dir) * (width/2); //we need with for the length of the cap
       sf::Vector2f perp = getPerpendicularDir(dir)*width; //twice as much as the length
+
       //pre cap
       m_vertices.append(sf::Vertex( m_bolt[i-1] + perp, sf::Vector2f(0,0) ));
       m_vertices.append(sf::Vertex( m_bolt[i-1] - perp, sf::Vector2f(0,128) ));
@@ -111,13 +114,13 @@ private:
 
 class LightningBolt : public sf::Drawable, public sf::Transformable, public Action {
 public:
-  LightningBolt(const sf::Vector2f& begin, const sf::Vector2f& end, size_t bolts, sf::Vector2i variance);
+  LightningBolt(size_t bolts, const sf::Vector2i& boltSize);
   virtual void onStart() { start(); }
   virtual void onEnd() {}
   virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
   virtual void update(const sf::Time &dt);
   virtual void start();
-  virtual bool isFinished() const { return (m_elapsedTime >= 1); }
+  virtual bool isFinished() const { return (m_elapsedTime >= m_duration); }
   virtual bool isBlocking() const { return true; }
   
 private:
@@ -125,11 +128,58 @@ private:
   sf::Vector2f getPerpendicularDir(sf::Vector2f dir) const; //TODO: put it in a common place so wind and lightning can use it
   
   std::vector<Lightning> m_lightnings;
-  sf::Vector2f           m_begin, m_end;
   size_t                 m_bolts;
-  sf::Vector2i           m_variance;
+  sf::Vector2i           m_boltSize;
   int                    m_iteration;
-  float                  m_elapsedTime;
+  sf::Time               m_elapsedTime;
+  sf::Time               m_duration;
+};
+
+
+class FlashLightning : public sf::Drawable, public sf::Transformable, public Action {
+public:
+  FlashLightning(size_t bolts, 
+                 const sf::Vector2i& boltSize, 
+                 const sf::Time& duration, 
+                 const sf::Vector2i& windowSize,
+                 const sf::Vector2f& position)
+      : m_lightningBolt(bolts, boltSize),
+        m_rect(sf::Vector2f(windowSize.x, windowSize.y)),
+        m_elapsedTime(duration),
+        m_duration(duration)
+  {
+    m_framebuffer.create(boltSize.x, boltSize.y);
+    m_lightningSprite.setTexture(m_framebuffer.getTexture(), true);
+    //m_lightningSprite.setPosition(position);
+  }
+  
+  virtual void onStart() { 
+    m_lightningBolt.start();
+    m_elapsedTime = sf::Time();
+  }
+  virtual void onEnd() {}
+  virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    if (isFinished()) //nothing to draw
+      return;
+    
+    states.transform *= getTransform();
+    //target.draw(m_lightningBolt, states);
+    target.draw(m_lightningSprite, states);
+    target.draw(m_rect, states);
+  }
+  
+  virtual void update(const sf::Time &dt);
+  virtual bool isFinished() const { return (m_elapsedTime >= m_duration); }
+  virtual bool isBlocking() const { return true; }
+
+private:
+  LightningBolt        m_lightningBolt;
+  sf::RectangleShape   m_rect;
+  sf::Time             m_elapsedTime;
+  sf::Time             m_duration;
+  
+  sf::RenderTexture    m_framebuffer;
+  sf::Sprite           m_lightningSprite;
 };
 
 #endif // LIGHTNING_HPP

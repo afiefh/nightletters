@@ -9,7 +9,6 @@
 
 #include "Nightsky.hpp"
 #include "StrokedText.hpp"
-#include "lightning.hpp"
 #include "utilities.hpp"
 #include "SoundManager.hpp"
 #include "Action.hpp"
@@ -20,6 +19,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <functional>
+#include "lightning.hpp"
 
 void initializeGlew() {
   GLenum err = glewInit();
@@ -50,19 +50,20 @@ public:
 
 int main() 
 {
+  const sf::Vector2i windowSize(800, 600);
   ActionList actionList;
   srand(time(NULL));
-  sf::RenderWindow window(sf::VideoMode(800, 600), "Nightletters");
+  sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "Nightletters");
   window.setFramerateLimit(60);
   initializeGlew(); //has to be done after OpenGL context was created
   
   sf::RenderTexture framebuffer;
-  framebuffer.create(800,600);
+  framebuffer.create(windowSize.x, windowSize.y);
   sf::Sprite lightningSprite(framebuffer.getTexture());
   
   
-  Nightsky nightsky(sf::Vector2i(800, 600));
-  LightningBolt lightning(sf::Vector2f(500,0), sf::Vector2f(500,500), 4, sf::Vector2i(300,0));
+  Nightsky nightsky(windowSize);
+  FlashLightning lightning(4, sf::Vector2i(800,600), sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
   
   //text stuff
   sf::ComplexFont mf;
@@ -81,7 +82,7 @@ int main()
   inputDisplay.setFont(mf);
   
   SoundManager soundManager;
-  soundManager.readJsonFile("arabic.json");
+  soundManager.readJsonFile("english.json");
   
   soundManager.playSound();
   text.setString(soundManager.getDisplayText());
@@ -123,7 +124,7 @@ int main()
     sf::Time dt = clock.restart();
     if (inputStr == soundManager.getDisplayText() && acceptInput) {
       acceptInput = false;
-      lightning.start();
+      lightning.onStart();
       
       textDisplayFadeIn.restart();
       textDisplayFadeOut.restart();
@@ -168,11 +169,14 @@ int main()
     //lightning.update(0.0f); //TODO: need to take dt into account at some point
     acceptInput = actionList.empty();
     framebuffer.clear(sf::Color(0,0,0,0));
+    /*
     glBlendEquation(GL_MAX);
     framebuffer.draw(lightning);
     framebuffer.display();
     glBlendEquation(GL_FUNC_ADD);
     window.draw(lightningSprite);
+    */
+    window.draw(lightning);
     /*
     if (lightning.isFinished() == false) {
       lightning.update(0.0f); //TODO: need to take dt into account at some point

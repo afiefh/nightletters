@@ -1,0 +1,31 @@
+{
+ "alphabet":
+        [
+          {"name":"A", "file":"../audio/en/A.ogg"},
+          {"name":"B", "file":"../audio/en/B.ogg"},
+          {"name":"C", "file":"../audio/en/C.ogg"},
+          {"name":"D", "file":"../audio/en/D.ogg"},
+          {"name":"E", "file":"../audio/en/E.ogg"},
+          {"name":"F", "file":"../audio/en/F.ogg"},
+          {"name":"G", "file":"../audio/en/G.ogg"},
+          {"name":"H", "file":"../audio/en/H.ogg"},
+          {"name":"I", "file":"../audio/en/I.ogg"},
+          {"name":"J", "file":"../audio/en/J.ogg"},
+          {"name":"K", "file":"../audio/en/K.ogg"},
+          {"name":"L", "file":"../audio/en/L.ogg"},
+          {"name":"M", "file":"../audio/en/M.ogg"},
+          {"name":"N", "file":"../audio/en/N.ogg"},
+          {"name":"O", "file":"../audio/en/O.ogg"},
+          {"name":"P", "file":"../audio/en/P.ogg"},
+          {"name":"Q", "file":"../audio/en/Q.ogg"},
+          {"name":"R", "file":"../audio/en/R.ogg"},
+          {"name":"S", "file":"../audio/en/S.ogg"},
+          {"name":"T", "file":"../audio/en/T.ogg"},
+          {"name":"U", "file":"../audio/en/U.ogg"},
+          {"name":"V", "file":"../audio/en/V.ogg"},
+          {"name":"W", "file":"../audio/en/W.ogg"},
+          {"name":"X", "file":"../audio/en/X.ogg"},
+          {"name":"Y", "file":"../audio/en/Y.ogg"},
+          {"name":"Z", "file":"../audio/en/Z.ogg"}
+        ]
+}

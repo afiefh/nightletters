@@ -19,7 +19,10 @@ public:
     std::ifstream ifs(filename);
     
     bool success = reader.parse(ifs, root, false);
-    if(!success) throw "Error reading json";
+    if(!success) {
+      std::cout << "Error reading json file: " << filename << std::endl;
+      throw "Error reading json";
+    }
     
     std::vector<SoundData> result;
     for(auto& sound : root["alphabet"]) {
