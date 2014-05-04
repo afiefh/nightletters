@@ -18,9 +18,15 @@ void LightningBolt::generateLightnings()
     sf::Vector2f midPoint;
     float width;
     size_t sourceLightning = rand() % m_lightnings.size();
-    std::tie(midPoint,width) = m_lightnings[sourceLightning].getRandomPoint();
-    const sf::Vector2f  endPoint = sf::Vector2f(rand() % m_boltSize.x, m_boltSize.y - (rand() % (m_boltSize.y/10)));
-       
+    std::tie(midPoint, width) = m_lightnings[sourceLightning].getRandomPoint();
+    const int endY = m_boltSize.y - (rand() % (m_boltSize.y/10));
+    const int distanceY = abs(endY - midPoint.y);
+    int endX = midPoint.x + (rand() % (2 * distanceY)) - distanceY;
+    if(endX < 0) endX = 0;
+    if(endX > m_boltSize.x) endX = m_boltSize.x;
+    sf::Vector2f  endPoint = sf::Vector2f(endX, endY);
+    
+    
     int newAlpha = std::min(m_lightnings[sourceLightning].getMaxAlpha(), 200 + (rand()%55));
     m_lightnings.push_back(Lightning(midPoint, endPoint, perp, width, 5, newAlpha));
   }
