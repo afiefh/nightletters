@@ -22,8 +22,8 @@ public:
     m_height = m_texture.getSize().y;
   
     sf::Vector2f origin(0.0f,0.0f);
-    for (size_t h=0; h < m_tesselationY; h++) {
-      for (size_t w=0; w < m_tesselationX; w++) {
+    for (size_t h=0; h < m_tesselationY+1; h++) {
+      for (size_t w=0; w < m_tesselationX+1; w++) {
         m_masses.push_back( PointMass{origin, sf::Vector2f(0,0), sf::Vector2f(0,0), h == m_tesselationY-1} );
         origin.x += m_width/m_tesselationX;
       }
@@ -38,15 +38,18 @@ public:
     float diffPosLen  = getLength(diffPos);
     return -(diffPosLen  - restDistance) * diffPos/diffPosLen;
   }
+  
   inline float getLength(sf::Vector2f vec) const { return sqrt(vec.x*vec.x  + vec.y*vec.y); }
-  inline size_t getIndex(size_t x, size_t y) { return x + y * m_tesselationX; }
+  
+  inline size_t getIndex(size_t x, size_t y) { return x + y * (m_tesselationX+1); }
+  
   void update() {
     //std::cout << "Process:" << std::endl;
     const float restDistanceX = m_width  / (float)m_tesselationX;
     const float restDistanceY = m_height / (float)m_tesselationY;
     
-    for (size_t h = 0; h < m_tesselationY; h++) {
-      for (size_t w = 0; w < m_tesselationX; w++) {
+    for (size_t h = 0; h < m_tesselationY+1; h++) {
+      for (size_t w = 0; w < m_tesselationX+1; w++) {
         
         size_t self  = getIndex(w    , h    );
         size_t left  = getIndex(w - 1, h    );
@@ -56,18 +59,18 @@ public:
 
         sf::Vector2f acceleration(0,0);
         if (w != 0)                acceleration += CalcAcceleration(m_masses[self], m_masses[left], restDistanceX);
-        if (w != m_tesselationX-1) acceleration += CalcAcceleration(m_masses[self], m_masses[right], restDistanceX);
+        if (w != m_tesselationX) acceleration += CalcAcceleration(m_masses[self], m_masses[right], restDistanceX);
         if (h != 0)                acceleration += CalcAcceleration(m_masses[self], m_masses[up], restDistanceY);
-        if (h != m_tesselationY-1) acceleration += CalcAcceleration(m_masses[self], m_masses[down], restDistanceY);
+        if (h != m_tesselationY) acceleration += CalcAcceleration(m_masses[self], m_masses[down], restDistanceY);
         acceleration *= 10.0f;
         
-        if (h != m_tesselationY-1) acceleration -= 0.5f * sf::Vector2f(m_masses[self].position.x - m_masses[down].position.x, 0); //try to return to the same area in height
+        if (h != m_tesselationY) acceleration -= 0.5f * sf::Vector2f(m_masses[self].position.x - m_masses[down].position.x, 0); //try to return to the same area in height
         
         m_masses[self].acceleration = acceleration;
       }
     }
     
-    const float timestep = 0.05f;
+    const float timestep = 0.10f;
     //update the position
     for(auto& pointMass : m_masses) {
       if (pointMass.pinned) continue;
@@ -75,9 +78,10 @@ public:
       pointMass.position += pointMass.velocity * timestep;
     }
     
+    //draw quads
     m_vertices.clear();
-    for (size_t h = 0; h < m_tesselationY - 1; h++) {
-      for (size_t w = 0; w < m_tesselationX - 1; w++) {
+    for (size_t h = 0; h < m_tesselationY ; h++) {
+      for (size_t w = 0; w < m_tesselationX; w++) {
         m_vertices.append(getVertex(w    , h    ));
         m_vertices.append(getVertex(w + 1, h    ));
         m_vertices.append(getVertex(w + 1, h + 1));
@@ -86,7 +90,7 @@ public:
     }
   }
   sf::Vertex getVertex(size_t w, size_t h) {
-    const PointMass& pointMass = m_masses[w+h*m_tesselationX];
+    const PointMass& pointMass = m_masses[getIndex(w,h)];
     const float u = w*m_width/m_tesselationX;
     const float v = h*m_height/m_tesselationY;
     //std::cout << "u=" << u <<" v=" << v << " size=" << m_textureSize <<std::endl;
@@ -116,8 +120,8 @@ public:
 private:
   //all the masses are in here
   std::vector<PointMass> m_masses;
-  static const size_t m_tesselationX = 20;
-  static const size_t m_tesselationY = 20;
+  static const size_t m_tesselationX = 10;
+  static const size_t m_tesselationY = 10;
   float m_width;
   float m_height;
   const float m_drag;

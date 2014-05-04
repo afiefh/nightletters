@@ -6,7 +6,7 @@ else
 	linkflags = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lfreetype -lharfbuzz -ljsoncpp -lGL -lGLEW -L/home/afiefh/src/sfml_compiled/lib
 endif
 
-nightletters: main.o Font.o ComplexText.o wind.o lightning.o utilities.o
+nightletters: main.o Font.o ComplexText.o wind.o lightning.o GLCheck.o utilities.o
 	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o wind.o lightning.o utilities.o ${linkflags} -o nightletters
 
 main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp Actions.hpp SoundManager.hpp
@@ -29,6 +29,6 @@ lightning.o: lightning.cpp lightning.hpp
 
 utilities.o: utilities.cpp utilities.hpp
 	g++ -c ${cxxflags}  utilities.cpp -o utilities.o
-	
+
 run: nightletters
 	LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters

@@ -1,3 +1,5 @@
+#include "Action.hpp"
+
 class FadeText : public Action {
 public:
   FadeText(StrokedText* text,

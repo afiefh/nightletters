@@ -61,7 +61,6 @@ int main()
   framebuffer.create(windowSize.x, windowSize.y);
   sf::Sprite lightningSprite(framebuffer.getTexture());
   
-  
   Nightsky nightsky(windowSize);
   FlashLightning lightning(4, sf::Vector2i(800,600), sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
   
@@ -190,7 +189,6 @@ int main()
     }*/
     
     window.draw(inputDisplay);
-    
     // End the current frame and display its contents on screen
     window.display();
   }
