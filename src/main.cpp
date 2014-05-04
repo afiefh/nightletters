@@ -20,6 +20,7 @@
 #include <cmath>
 #include <functional>
 #include "lightning.hpp"
+#include "tree.hpp"
 
 void initializeGlew() {
   GLenum err = glewInit();
@@ -63,6 +64,10 @@ int main()
   
   Nightsky nightsky(windowSize);
   FlashLightning lightning(4, sf::Vector2i(800,600), sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
+  
+  SoftBody softBody("../graphic/tree_leaves.png");
+  softBody.move(20, 20);
+  softBody.update();
   
   //text stuff
   sf::ComplexFont mf;
@@ -189,6 +194,7 @@ int main()
     }*/
     
     window.draw(inputDisplay);
+    window.draw(softBody);
     // End the current frame and display its contents on screen
     window.display();
   }

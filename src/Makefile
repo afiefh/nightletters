@@ -9,7 +9,7 @@ endif
 nightletters: main.o Font.o ComplexText.o wind.o lightning.o GLCheck.o utilities.o
 	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o wind.o lightning.o utilities.o ${linkflags} -o nightletters
 
-main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp Actions.hpp SoundManager.hpp
+main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp Actions.hpp SoundManager.hpp tree.hpp
 	g++ -c ${cxxflags} main.cpp -o main.o
 
 Font.o: Font.cpp Font.hpp
