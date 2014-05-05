@@ -37,7 +37,7 @@ int main()
       rectangle.move(1,0);
     }
     softBody.update();
-    window.draw(softBody);
+    //window.draw(softBody);
     if (update) window.draw(rectangle);
     
     // End the current frame and display its contents on screen

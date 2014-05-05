@@ -90,7 +90,7 @@ int main()
   
   soundManager.playSound();
   text.setString(soundManager.getDisplayText());
-  
+  std::cout << (std::string)soundManager.getDisplayText() << std::endl;
   bool acceptInput(true);
   sf::Clock clock;
   
@@ -111,6 +111,7 @@ int main()
     [&soundManager, &text, &inputStr, &inputDisplay](const sf::Time& /*dt*/)->bool 
     {
       soundManager.next();
+      std::cout << (std::string)soundManager.getDisplayText() << std::endl;
       text.setString(soundManager.getDisplayText());
       soundManager.playSound();
       
@@ -126,7 +127,7 @@ int main()
   while (window.isOpen())
   {
     sf::Time dt = clock.restart();
-    if (inputStr == soundManager.getDisplayText() && acceptInput) {
+    if (soundManager.acceptableAnswer(inputStr) && acceptInput) {
       acceptInput = false;
       lightning.onStart();
       
@@ -170,31 +171,12 @@ int main()
     window.draw(nightsky);
     window.draw(text);
     actionList.update(dt);
-    //lightning.update(0.0f); //TODO: need to take dt into account at some point
     acceptInput = actionList.empty();
     framebuffer.clear(sf::Color(0,0,0,0));
-    /*
-    glBlendEquation(GL_MAX);
-    framebuffer.draw(lightning);
-    framebuffer.display();
-    glBlendEquation(GL_FUNC_ADD);
-    window.draw(lightningSprite);
-    */
     window.draw(lightning);
-    /*
-    if (lightning.isFinished() == false) {
-      lightning.update(0.0f); //TODO: need to take dt into account at some point
-      acceptInput = lightning.isFinished() ? true : false;
-      framebuffer.clear(sf::Color(0,0,0,0));
-      glBlendEquation(GL_MAX);
-      framebuffer.draw(lightning);
-      framebuffer.display();
-      glBlendEquation(GL_FUNC_ADD);
-      window.draw(lightningSprite);
-    }*/
     
     window.draw(inputDisplay);
-    window.draw(softBody);
+    //window.draw(softBody);
     // End the current frame and display its contents on screen
     window.display();
   }

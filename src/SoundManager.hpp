@@ -8,6 +8,7 @@
 struct SoundData {
   sf::String  name;
   std::string filename;
+//  std::vector<sf::String> acceptbaleAnswers;
 };
 
 class SoundManager {
@@ -25,10 +26,26 @@ public:
     }
     
     std::vector<SoundData> result;
+    if(!root.isMember("alphabet")) {
+      std::cout << "Doesn't contain alphabet" << filename << std::endl;
+      throw "Doesn't contain alphabet";
+    }
+    
     for(auto& sound : root["alphabet"]) {
+      if(!sound.isMember("name")  ||!sound.isMember("file")  ||!sound.isMember("accept")) {
+        std::cout << "Doesn't contain name,file,accept" << filename << std::endl;
+        throw "Doesn't contain name,file,accept";
+      }
+      
       std::string name = sound["name"].asString();
       std::string file = sound["file"].asString();
-      result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file} ) ;
+      std::vector<sf::String> acceptbaleAnswers;
+      for(const Json::Value& answer: sound["accept"]) {
+        std::string strAnswer = answer.asString();
+        acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
+      }
+
+      result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file/*, acceptbaleAnswers*/}) ;
     }
     
     std::random_shuffle(result.begin(), result.end());
@@ -39,6 +56,17 @@ public:
   
   sf::String getDisplayText() const {
    return m_sounds.front().name;
+  }
+  
+  bool acceptableAnswer(sf::String str) const {
+    return str==m_sounds.front().name;
+    
+    for(const sf::String& answer: m_sounds.front().acceptbaleAnswers) {
+      //std::cout << (std::string)str << "==" << (std::string)answer << " = "; //<< str == answer << std::endl;
+      if(str == answer) return true;
+    }
+    
+    return false;
   }
   
   void playSound() {
