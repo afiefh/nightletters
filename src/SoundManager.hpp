@@ -8,7 +8,7 @@
 struct SoundData {
   sf::String  name;
   std::string filename;
-//  std::vector<sf::String> acceptbaleAnswers;
+  std::vector<sf::String> acceptbaleAnswers;
 };
 
 class SoundManager {
@@ -45,7 +45,7 @@ public:
         acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
       }
 
-      result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file/*, acceptbaleAnswers*/}) ;
+      result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file, acceptbaleAnswers}) ;
     }
     
     std::random_shuffle(result.begin(), result.end());
@@ -59,10 +59,7 @@ public:
   }
   
   bool acceptableAnswer(sf::String str) const {
-    return str==m_sounds.front().name;
-    
     for(const sf::String& answer: m_sounds.front().acceptbaleAnswers) {
-      //std::cout << (std::string)str << "==" << (std::string)answer << " = "; //<< str == answer << std::endl;
       if(str == answer) return true;
     }
     

@@ -66,7 +66,7 @@ int main()
   FlashLightning lightning(4, sf::Vector2i(800,600), sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
   
   SoftBody softBody("../graphic/tree_leaves.png");
-  softBody.move(20, 20);
+  softBody.move(476, 58);
   softBody.update();
   
   //text stuff
@@ -90,7 +90,7 @@ int main()
   
   soundManager.playSound();
   text.setString(soundManager.getDisplayText());
-  std::cout << (std::string)soundManager.getDisplayText() << std::endl;
+  
   bool acceptInput(true);
   sf::Clock clock;
   
@@ -111,7 +111,6 @@ int main()
     [&soundManager, &text, &inputStr, &inputDisplay](const sf::Time& /*dt*/)->bool 
     {
       soundManager.next();
-      std::cout << (std::string)soundManager.getDisplayText() << std::endl;
       text.setString(soundManager.getDisplayText());
       soundManager.playSound();
       
@@ -164,6 +163,8 @@ int main()
     
     
     nightsky.update();
+    softBody.velocityRight(-500, 500, 0, 200, -10);
+    softBody.update();
     // Clear the whole window before rendering a new frame
     window.clear(sf::Color(255,255,255));
     
@@ -171,12 +172,31 @@ int main()
     window.draw(nightsky);
     window.draw(text);
     actionList.update(dt);
+    //lightning.update(0.0f); //TODO: need to take dt into account at some point
     acceptInput = actionList.empty();
     framebuffer.clear(sf::Color(0,0,0,0));
+    /*
+    glBlendEquation(GL_MAX);
+    framebuffer.draw(lightning);
+    framebuffer.display();
+    glBlendEquation(GL_FUNC_ADD);
+    window.draw(lightningSprite);
+    */
     window.draw(lightning);
+    /*
+    if (lightning.isFinished() == false) {
+      lightning.update(0.0f); //TODO: need to take dt into account at some point
+      acceptInput = lightning.isFinished() ? true : false;
+      framebuffer.clear(sf::Color(0,0,0,0));
+      glBlendEquation(GL_MAX);
+      framebuffer.draw(lightning);
+      framebuffer.display();
+      glBlendEquation(GL_FUNC_ADD);
+      window.draw(lightningSprite);
+    }*/
     
     window.draw(inputDisplay);
-    //window.draw(softBody);
+    window.draw(softBody);
     // End the current frame and display its contents on screen
     window.display();
   }
