@@ -6,29 +6,22 @@ else
 	linkflags = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lfreetype -lharfbuzz -ljsoncpp -lGL -lGLEW -L/home/afiefh/src/sfml_compiled/lib
 endif
 
-nightletters: main.o Font.o ComplexText.o wind.o lightning.o GLCheck.o utilities.o
-	g++ ${cxxflags} main.o Font.o ComplexText.o GLCheck.o wind.o lightning.o utilities.o ${linkflags} -o nightletters
 
-main.o: main.cpp bezier.hpp Font.hpp ComplexText.hpp Breeze.hpp wind.hpp lightning.hpp Actions.hpp SoundManager.hpp tree.hpp
-	g++ -c ${cxxflags} main.cpp -o main.o
+#Define the source files, object files and dependency files
+SOURCES = main.cpp Font.cpp ComplexText.cpp wind.cpp lightning.cpp GLCheck.cpp utilities.cpp
+OBJECTS = $(SOURCES:%.cpp=%.o)
+DEPS = $(OBJECTS:.o=.d)
 
-Font.o: Font.cpp Font.hpp
-	g++ -c ${cxxflags} Font.cpp -o Font.o
+# define the name of the executable
+nightletters: ${OBJECTS}
+	g++ ${cxxflags} ${OBJECTS} ${linkflags} -o nightletters
 
-GLCheck.o: GLCheck.cpp GLCheck.hpp
-	g++ -c ${cxxflags} GLCheck.cpp -o GLCheck.o
+#include the dependency files
+-include $(DEPS)
 
-ComplexText.o: ComplexText.cpp ComplexText.hpp
-	g++ -c ${cxxflags}  ComplexText.cpp -o ComplexText.o
-
-wind.o: wind.cpp wind.hpp bezier.hpp
-	g++ -c ${cxxflags}  wind.cpp -o wind.o
-	
-lightning.o: lightning.cpp lightning.hpp
-	g++ -c ${cxxflags}  lightning.cpp -o lightning.o
-
-utilities.o: utilities.cpp utilities.hpp
-	g++ -c ${cxxflags}  utilities.cpp -o utilities.o
+#compile the object files
+%.o: %.cpp
+	g++ ${cxxflags} -MP -MMD -c $< -o $@
 
 run: nightletters
 	LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters
