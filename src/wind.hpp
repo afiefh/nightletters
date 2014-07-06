@@ -9,6 +9,7 @@ public:
   void update();
   void draw(sf::RenderTarget& target, sf::RenderStates states) const;
   void start(const sf::Vector2f& startPos, const sf::Vector2f& midPos, const sf::Vector2f& endPos, bool swirl);
+  std::pair<float, float> getStartAndEnd() const;
   
   bool m_finished;
 private:

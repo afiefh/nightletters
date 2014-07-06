@@ -41,6 +41,12 @@ void Wind::update() {
   m_t += 0.01;
   generateGeometry();
 }
+
+std::pair<float, float> Wind::getStartAndEnd() const {
+  auto p0 = m_curve.getPoint(m_t - m_length);
+  auto p1 = m_curve.getPoint(m_t);
+  return std::pair<float, float>(p0.x, p1.x);
+}
   
 void Wind::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {

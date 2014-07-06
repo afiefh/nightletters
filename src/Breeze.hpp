@@ -3,6 +3,7 @@
 
 #include "wind.hpp"
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 
 class Breeze : public sf::Drawable {
 public:
@@ -33,8 +34,22 @@ public:
     }
   }
   
+  std::pair<float, float> getStartAndEnd() const {
+    if (m_winds.size() < 1)
+      return std::pair<float, float>(0.0f, 0.0f);
+    
+    std::pair<float, float> result = m_winds[0].getStartAndEnd();
+    for (auto it = ++m_winds.begin(); it != m_winds.end(); ++it) {
+      std::pair<float, float> other = it->getStartAndEnd();
+      result.first = std::min(result.first, other.first);
+      result.second = std::max(result.second, other.second);
+    }
+    return result;
+  }
+  
 private:
-  void startWinds() {
+  void startWinds() 
+  {
     sf::Vector2f startPos = sf::Vector2f(0, rand() % m_windowSize.y/2);
     sf::Vector2f endPos   = sf::Vector2f(m_windowSize.x, rand() % m_windowSize.y/2);
     sf::Vector2f midPos   = (startPos + endPos)/2.0f  + sf::Vector2f(0, rand()%400-200);
@@ -42,6 +57,8 @@ private:
         wind.start(startPos, midPos, endPos, rand()%3 == 0);
       }
   }
+  
+  
 private:
   std::vector<Wind> m_winds;
   sf::Texture       m_texture;

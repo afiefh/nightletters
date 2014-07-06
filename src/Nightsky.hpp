@@ -32,6 +32,8 @@ public:
     target.draw(m_breeze, states);
   }
   
+  const Breeze& getBreeze() const { return m_breeze; }
+  
 private:
   sf::Texture m_backgroundTex;
   sf::Texture m_foregroundTex;
