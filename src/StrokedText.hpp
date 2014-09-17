@@ -1,7 +1,7 @@
 #ifndef __STORKEDTEXT_HPP__
 #define __STORKEDTEXT_HPP__
 
-#include "Font.hpp"
+#include "ComplexFont.hpp"
 #include "ComplexText.hpp"
 
 class StrokedText : public sf::Drawable {

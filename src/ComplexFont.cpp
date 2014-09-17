@@ -40,8 +40,7 @@
 #include <cstdlib>
 #include <cstring>
 
-
-#include "Font.hpp"
+#include "ComplexFont.hpp"
 #include "GLCheck.hpp"
 
 namespace

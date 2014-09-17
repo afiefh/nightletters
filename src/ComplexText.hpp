@@ -35,7 +35,7 @@
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/String.hpp>
-#include "Font.hpp"
+#include "ComplexFont.hpp"
 
 namespace sf
 {
