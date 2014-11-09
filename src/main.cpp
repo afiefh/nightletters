@@ -21,6 +21,7 @@
 #include <functional>
 #include "lightning.hpp"
 #include "tree.hpp"
+#include "menu.hpp"
 
 void initializeGlew() {
   GLenum err = glewInit();
@@ -48,6 +49,45 @@ public:
     
   }
 };
+
+#include <jsoncpp/json/json.h>
+#include <fstream>
+
+//language loader must be a functor that takes exactly one string parameter which is the data file
+template<typename LanguageLoader>
+void populateMenu(const char* languageFile, LanguageLoader loader, Menu &menu)
+{
+    Json::Value root;
+    Json::Reader reader;
+
+    std::ifstream ifs(languageFile);
+
+    bool success = reader.parse(ifs, root, false);
+    if(!success) {
+        std::cout << "Error reading json file: " << languageFile << std::endl;
+        throw "Error reading json";
+    }
+
+    std::vector<SoundData> result;
+
+    bool first = true;
+    for(auto& language : root) {
+        if(!language.isMember("icon")  || !language.isMember("data")) {
+            std::cout << "Doesn't contain name icon, data" << languageFile << std::endl;
+            throw "Doesn't contain icon, data";
+        }
+        
+        std::string icon = language["icon"].asString();
+        std::string data = language["data"].asString();
+
+        if (first)
+            loader(data);
+        first = false;
+        
+        menu.addSubmenu(icon).setFunction(std::bind(loader, std::move(data)));
+    }
+    
+}
 
 int main() 
 {
@@ -79,17 +119,31 @@ int main()
   text.setPosition(sf::Vector2f(50,50));
   text.setFont(mf);
   
+  SoundManager soundManager;
+  
+  //the menu
+  Menu menu("../graphic/icon-globe.png");
+  menu.setPosition (windowSize.x * 0.9, windowSize.y * 0.9);
+  populateMenu("languages.json", [&soundManager, &text](std::string& dataFile) {
+      std::cout << "Loading " << dataFile << std::endl;
+      soundManager.readJsonFile(dataFile.c_str());
+      soundManager.playSound();
+      text.setString(soundManager.getDisplayText());
+      std::wstring s(soundManager.getDisplayText().toWideString());
+      std::wcout << L"Start with: " << s << std::endl;
+    }, menu);
   
   inputDisplay.setCharacterSize (50);
   inputDisplay.setColor(sf::Color(100,100,100), sf::Color::Black);
   inputDisplay.setPosition(sf::Vector2f(200,200));
   inputDisplay.setFont(mf);
   
-  SoundManager soundManager;
+/*  
   soundManager.readJsonFile("english.json");
   
   soundManager.playSound();
   text.setString(soundManager.getDisplayText());
+*/
   
   bool acceptInput(true);
   sf::Clock clock;
@@ -150,6 +204,10 @@ int main()
       // Request for closing the window
       if (event.type == sf::Event::Closed) {
           window.close();
+      } else if (event.type == sf::Event::MouseButtonPressed) {
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                menu.clicked(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
+            }
       } else if (event.type == sf::Event::TextEntered && acceptInput) {
         if (event.text.unicode == '\b') {
           if (inputStr.getSize() <= 0) continue;
@@ -198,6 +256,7 @@ int main()
     
     window.draw(inputDisplay);
     window.draw(softBody);
+    window.draw(menu);
     // End the current frame and display its contents on screen
     window.display();
   }

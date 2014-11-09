@@ -1,6 +1,8 @@
 #ifndef __ACTION_HPP__
 #define __ACTION_HPP__
 
+#include <functional>
+
 namespace sf {
   class Time;
 }

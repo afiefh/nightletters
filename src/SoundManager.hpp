@@ -39,13 +39,15 @@ public:
       
       std::string name = sound["name"].asString();
       std::string file = sound["file"].asString();
+      sf::String sfml_name = sf::String::fromUtf8(name.begin(), name.end());
       std::vector<sf::String> acceptbaleAnswers;
       for(const Json::Value& answer: sound["accept"]) {
         std::string strAnswer = answer.asString();
         acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
       }
-
-      result.push_back( {sf::String::fromUtf8(name.begin(), name.end()), file, acceptbaleAnswers}) ;
+      if (acceptbaleAnswers.empty()) acceptbaleAnswers.push_back(sfml_name);
+      
+      result.push_back( {sfml_name, file, acceptbaleAnswers}) ;
     }
     
     std::random_shuffle(result.begin(), result.end());
