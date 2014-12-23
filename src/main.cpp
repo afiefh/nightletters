@@ -224,6 +224,7 @@ int main()
     std::pair<float, float> windPosition = nightsky.getBreeze().getStartAndEnd();
     softBody.velocityRight(windPosition.first - 476, windPosition.second - 476, 0, 200, 5);
     softBody.update();
+    menu.update();
     // Clear the whole window before rendering a new frame
     window.clear(sf::Color(255,255,255));
     
