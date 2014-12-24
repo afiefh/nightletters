@@ -1,0 +1,4 @@
+[
+    {"icon": "../graphic/icon-arabic.png", "data": "arabic.json"},
+    {"icon": "../graphic/icon-english.png", "data": "english.json"}
+]
