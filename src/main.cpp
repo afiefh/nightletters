@@ -125,6 +125,11 @@ int main()
   Menu menu("../graphic/icon-globe.png");
   menu.setPosition (windowSize.x * 0.9, windowSize.y * 0.9);
   populateMenu("languages.json", [&soundManager, &text](std::string& dataFile) {
+      if (dataFile == soundManager.getLoadedFile())
+      {
+          std::cout << "File " << dataFile << " already loaded" << std::endl;
+          return;
+      }
       std::cout << "Loading " << dataFile << std::endl;
       soundManager.readJsonFile(dataFile.c_str());
       soundManager.playSound();

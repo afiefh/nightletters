@@ -14,6 +14,8 @@ struct SoundData {
 class SoundManager {
 public:
   void readJsonFile(const char* filename) {
+    m_filename = filename;
+      
     Json::Value root;
     Json::Reader reader;
     
@@ -84,8 +86,14 @@ public:
 	  m_sounds.pop_front();
   }
   
+  const std::string getLoadedFile() const
+  {
+      return m_filename;
+  }
+  
 private:
   std::list<SoundData> m_sounds;
   sf::Sound            m_soundPlayer;
   sf::SoundBuffer      m_buffer;
+  std::string          m_filename;
 };

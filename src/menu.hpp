@@ -78,7 +78,7 @@ public:
         float target = m_isOpen ? 1.0 : 0.0;
         if (target != m_transition)
         {
-            std::cout << "visible:" << m_isOpen << " transition: " << m_transition << " target: " << target << std::endl;
+            //std::cout << "visible:" << m_isOpen << " transition: " << m_transition << " target: " << target << std::endl;
             m_transition += m_isOpen ? 0.05f : -0.05f;
             m_transition = std::min(std::max(m_transition, 0.0f), 1.0f);
             
@@ -93,7 +93,6 @@ public:
 private:
     void updateSubmenu(Menu& subMenu, int i)
     {
-        std::cout << "Set submenu " << i << " to " << m_transition << std::endl;
         subMenu.setAlpha(m_transition);
         const float offset = -50 * i * m_transition;
         subMenu.setPosition(sf::Vector2f(offset, 0.0f));
