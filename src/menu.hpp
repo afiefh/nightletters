@@ -28,6 +28,11 @@ public:
         states.transform *= getTransform();
         target.draw(icon, states);
         
+        if (m_isOpen == false && m_transition == 0.0f)
+        {
+            return; // internal menus are not visible
+        }
+        
         int i=0;
         for(const auto& subMenu : subMenus)
         {

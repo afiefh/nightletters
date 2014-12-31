@@ -33,6 +33,7 @@ public:
   }
   
   const Breeze& getBreeze() const { return m_breeze; }
+  Starfield& getStarfield() { return m_starfield; }
   
 private:
   sf::Texture m_backgroundTex;

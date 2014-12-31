@@ -298,6 +298,19 @@ Vector2f ComplexText::findCharacterPos(std::size_t index) const
 }
 
 ////////////////////////////////////////////////////////////
+FloatRect ComplexText::getLocalBounds() const
+{
+    return m_bounds;
+}
+
+
+////////////////////////////////////////////////////////////
+FloatRect ComplexText::getGlobalBounds() const
+{
+    return getTransform().transformRect(getLocalBounds());
+}
+
+////////////////////////////////////////////////////////////
 void ComplexText::draw(RenderTarget& target, RenderStates states) const
 {
     if (m_font)

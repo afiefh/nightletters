@@ -89,9 +89,11 @@ void populateMenu(const char* languageFile, LanguageLoader loader, Menu &menu)
     
 }
 
+const sf::Vector2f textPosition(50,50);
+const sf::Vector2i windowSize(800, 600);
+const size_t fontSize = 50;
 int main() 
 {
-  const sf::Vector2i windowSize(800, 600);
   ActionList actionList;
   srand(time(NULL));
   sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "Nightletters");
@@ -103,7 +105,7 @@ int main()
   sf::Sprite lightningSprite(framebuffer.getTexture());
   
   Nightsky nightsky(windowSize);
-  FlashLightning lightning(4, sf::Vector2i(800,600), sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
+  FlashLightning lightning(4, windowSize, sf::seconds(1.0f), windowSize, sf::Vector2f(200,0));
   
   SoftBody softBody("../graphic/tree_leaves.png");
   softBody.move(476, 58);
@@ -114,9 +116,9 @@ int main()
   mf.loadFromFile("amiri-regular.ttf");
   sf::String inputStr;
   StrokedText text, inputDisplay;
-  text.setCharacterSize (50);
+  text.setCharacterSize (fontSize);
   text.setColor(sf::Color::Black, sf::Color(100,100,100));
-  text.setPosition(sf::Vector2f(50,50));
+  text.setPosition(textPosition);
   text.setFont(mf);
   
   SoundManager soundManager;
@@ -142,13 +144,6 @@ int main()
   inputDisplay.setColor(sf::Color(100,100,100), sf::Color::Black);
   inputDisplay.setPosition(sf::Vector2f(200,200));
   inputDisplay.setFont(mf);
-  
-/*  
-  soundManager.readJsonFile("english.json");
-  
-  soundManager.playSound();
-  text.setString(soundManager.getDisplayText());
-*/
   
   bool acceptInput(true);
   sf::Clock clock;
@@ -200,6 +195,7 @@ int main()
       actionList.push_back(&nextLetter);
       actionList.push_back(&inputDisplayFadeIn);
       actionList.push_back(&textDisplayFadeIn);
+      nightsky.getStarfield().generateStars(inputStr, mf, fontSize, textPosition, windowSize);
     }
     
     // Event processing
@@ -224,12 +220,12 @@ int main()
       }
     }
     
-    
     nightsky.update();
     std::pair<float, float> windPosition = nightsky.getBreeze().getStartAndEnd();
     softBody.velocityRight(windPosition.first - 476, windPosition.second - 476, 0, 200, 5);
     softBody.update();
     menu.update();
+    
     // Clear the whole window before rendering a new frame
     window.clear(sf::Color(255,255,255));
     
@@ -237,32 +233,14 @@ int main()
     window.draw(nightsky);
     window.draw(text);
     actionList.update(dt);
-    //lightning.update(0.0f); //TODO: need to take dt into account at some point
     acceptInput = actionList.empty();
     framebuffer.clear(sf::Color(0,0,0,0));
-    /*
-    glBlendEquation(GL_MAX);
-    framebuffer.draw(lightning);
-    framebuffer.display();
-    glBlendEquation(GL_FUNC_ADD);
-    window.draw(lightningSprite);
-    */
     window.draw(lightning);
-    /*
-    if (lightning.isFinished() == false) {
-      lightning.update(0.0f); //TODO: need to take dt into account at some point
-      acceptInput = lightning.isFinished() ? true : false;
-      framebuffer.clear(sf::Color(0,0,0,0));
-      glBlendEquation(GL_MAX);
-      framebuffer.draw(lightning);
-      framebuffer.display();
-      glBlendEquation(GL_FUNC_ADD);
-      window.draw(lightningSprite);
-    }*/
     
     window.draw(inputDisplay);
     window.draw(softBody);
     window.draw(menu);
+
     // End the current frame and display its contents on screen
     window.display();
   }
