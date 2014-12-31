@@ -17,11 +17,19 @@ public:
         m_variance  = variance;
     }
   
+
     void update(float t) {
-        float newScale = m_baseScale + m_variance * m_baseScale * sin(m_omega*t+m_theta);
+        float newScale = m_baseScale + m_variance * m_baseScale * sin(m_omega * t + m_theta);
         setScale(newScale, newScale);
     }
-  
+
+    // solve omega*t1+theta1=omega*t2+theta2 for theta2 gives theta2=theta1+omega(t1-t2)
+    void alignTheta(float t1Minust2)
+    {
+        m_theta = m_theta + m_omega * t1Minust2;
+    }
+
+private:
   float m_baseScale;
   float m_omega, m_theta, m_variance;
 };
@@ -80,10 +88,10 @@ public:
     
     void generateStars(size_t n, const sf::Vector2i& windowSize)
     {
-        t=0;
-        stars.resize(n);
+        m_t=0;
+        m_stars.resize(n);
     
-        for(auto& star : stars) 
+        for(auto& star : m_stars) 
         {
             star.setTexture(*m_starTex, true);
             star.setOrigin(star.getTextureRect().width/2, star.getTextureRect().height/2);
@@ -93,7 +101,7 @@ public:
   
     virtual void  draw(sf::RenderTarget &target, sf::RenderStates states) const 
     {
-        for(auto& star : stars) 
+        for(auto& star : m_stars) 
         {
             target.draw(star, states);
         }
@@ -101,18 +109,31 @@ public:
   
     void update()
     {
+        for(auto& star : m_stars)
+        {
+            star.update(m_t);
+        }
+        m_t+=0.05;
+    }
+    
+    
+    void addStars(const std::vector<MovingStar>& stars, float starTime)
+    {
+        
+        const float t1Minust2 = m_t - starTime;
         for(auto& star : stars)
         {
-            star.update(t);
+            Star newStar(star);
+            newStar.alignTheta(t1Minust2);
+            m_stars.push_back(newStar);
         }
-        t+=0.05;
     }
 
 private:
     sf::Vector2i windowSize;
     sf::Texture* m_starTex;
-    std::vector<Star> stars;
-    float t;
+    std::vector<Star> m_stars;
+    float m_t;
 };
 
 
@@ -131,7 +152,7 @@ public:
     virtual void  draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         target.draw(movingStars, states);
-        //target.draw(stationaryStars, states);
+        target.draw(stationaryStars, states);
     }
 
     void update()
@@ -142,6 +163,7 @@ public:
 
     void generateStars(sf::String str, sf::ComplexFont &mf, unsigned int characterSize, const sf::Vector2f& textPosition, const sf::Vector2i& windowSize)
     {
+        stationaryStars.addStars(movingStars.getStars(), movingStars.getTime());
         movingStars.generateStars(str, mf, characterSize, textPosition, windowSize);
     }
 

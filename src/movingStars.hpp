@@ -15,6 +15,7 @@ public:
 
     void generateStars(sf::String str, sf::ComplexFont &mf, unsigned int characterSize, const sf::Vector2f& textPosition, const sf::Vector2i& windowSize)
     {
+        m_stars.clear();
         sf::ComplexText text(str, mf, characterSize / renderFactor);
         text.setColor(sf::Color::White);
         sf::FloatRect rect = text.getLocalBounds();
@@ -37,7 +38,7 @@ public:
                 uint16_t r = *(pixelPtr + (i * imgSize.x +  j) * 4);
                 uint16_t g = *(pixelPtr + (i * imgSize.x +  j) * 4 + 1);
                 uint16_t b = *(pixelPtr + (i * imgSize.x +  j) * 4 + 2);
-                if ((r+g+b) / 3 > 50)
+                if ((r+g+b) / 3 > 20)
                 {
                     const float initialX = rect.left * renderFactor + textPosition.x + j * renderFactor + renderFactor/2;
                     const float initialY = rect.top * renderFactor  + textPosition.y + i * renderFactor + renderFactor/2;
@@ -70,6 +71,10 @@ public:
             target.draw(star, states);
         }
     }
+    
+    std::vector<MovingStar> getStars() { return std::move(m_stars); }
+    float getTime() const { return m_t; }
+    
     
 private:
     std::vector<MovingStar> m_stars;

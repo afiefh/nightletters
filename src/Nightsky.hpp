@@ -8,7 +8,7 @@
 
 class Nightsky : public sf::Drawable {
 public:
-  Nightsky(const sf::Vector2i& windowSize) : m_moon("../graphic/moon.png", windowSize), m_starfield(150, "../graphic/star.png", windowSize), m_breeze(windowSize, "../graphic/wind.png", 3, 2, 0.2, 0.4)
+  Nightsky(const sf::Vector2i& windowSize) : m_moon("../graphic/moon.png", windowSize), m_starfield(50, "../graphic/star.png", windowSize), m_breeze(windowSize, "../graphic/wind.png", 3, 2, 0.2, 0.4)
   {
     m_backgroundTex.loadFromFile("../graphic/hill_background.png");
     m_foregroundTex.loadFromFile("../graphic/hill_foreground.png");
