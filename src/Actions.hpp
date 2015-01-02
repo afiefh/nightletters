@@ -1,5 +1,30 @@
 #include "Action.hpp"
 
+class BlockingWait : public Action
+{
+public:
+    BlockingWait(sf::Time duration)
+    : m_duration(duration)
+    , m_time(sf::seconds(0))
+    {}
+
+    virtual void update(const sf::Time &dt) 
+    {
+        //std::cout << "mtime = " << m_time.asMilliseconds() << std::endl;
+        m_time += dt;
+    }
+    
+    virtual void onStart() {}
+    virtual void onEnd() {}
+    virtual bool isBlocking() const { return true; }
+    virtual bool isFinished() const { return m_time > m_duration; }
+    void restart() {  m_time = sf::seconds(0); }
+      
+private:
+    sf::Time m_duration;
+    sf::Time m_time;
+};
+
 class FadeText : public Action {
 public:
   FadeText(StrokedText* text,

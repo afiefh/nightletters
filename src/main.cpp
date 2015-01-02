@@ -148,6 +148,8 @@ int main()
   bool acceptInput(true);
   sf::Clock clock;
   
+  BlockingWait blockingWaitOnRightAnswer(sf::seconds(0.9));
+  
   FadeText inputDisplayFadeIn(&inputDisplay, sf::Color(100,100,100,0), sf::Color(0,0,0,0), //initial
                                               sf::Color(100,100,100), sf::Color::Black,     //final
                                               sf::seconds(0.5));
@@ -176,26 +178,57 @@ int main()
     }
   );
   
+  SimpleAction repeatLetter(
+    [&soundManager, &text, &inputStr, &inputDisplay](const sf::Time& /*dt*/)->bool 
+    {
+      soundManager.playSound();
+      
+      inputStr.erase(inputStr.getSize() - 1, 1);
+      inputDisplay.setString(inputStr);
+
+      
+      return true; //finished
+    }
+  );
+  
   // The main loop - ends as soon as the window is closed
   while (window.isOpen())
   {
     sf::Time dt = clock.restart();
-    if (soundManager.acceptableAnswer(inputStr) && acceptInput) {
-      acceptInput = false;
-      lightning.onStart();
-      
-      textDisplayFadeIn.restart();
-      textDisplayFadeOut.restart();
-      inputDisplayFadeIn.restart();
-      inputDisplayFadeOut.restart();
-      
-      actionList.push_back(&inputDisplayFadeOut);
-      actionList.push_back(&textDisplayFadeOut);
-      actionList.push_back(&lightning);
-      actionList.push_back(&nextLetter);
-      actionList.push_back(&inputDisplayFadeIn);
-      actionList.push_back(&textDisplayFadeIn);
-      nightsky.getStarfield().generateStars(inputStr, mf, fontSize, textPosition, windowSize);
+    if (!soundManager.isAcceptableSubstring(inputStr) && acceptInput)
+    { //Wrong answer
+        acceptInput = false;
+        lightning.onStart();
+        
+        textDisplayFadeIn.restart();
+        textDisplayFadeOut.restart();
+        inputDisplayFadeIn.restart();
+        inputDisplayFadeOut.restart();
+        
+        actionList.push_back(&inputDisplayFadeOut);
+        actionList.push_back(&textDisplayFadeOut);
+        actionList.push_back(&lightning);
+        actionList.push_back(&repeatLetter);
+        actionList.push_back(&inputDisplayFadeIn);
+        actionList.push_back(&textDisplayFadeIn);
+    }
+    else if (soundManager.acceptableAnswer(inputStr) && acceptInput)
+    { //Right answer
+        acceptInput = false;
+        
+        textDisplayFadeIn.restart();
+        textDisplayFadeOut.restart();
+        inputDisplayFadeIn.restart();
+        inputDisplayFadeOut.restart();
+        blockingWaitOnRightAnswer.restart();
+        
+        actionList.push_back(&inputDisplayFadeOut);
+        actionList.push_back(&textDisplayFadeOut);
+        actionList.push_back(&blockingWaitOnRightAnswer);
+        actionList.push_back(&nextLetter);
+        actionList.push_back(&inputDisplayFadeIn);
+        actionList.push_back(&textDisplayFadeIn);
+        nightsky.getStarfield().generateStars(soundManager.getDisplayText(), mf, fontSize, textPosition, windowSize);
     }
     
     // Event processing

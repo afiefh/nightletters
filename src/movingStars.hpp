@@ -26,7 +26,6 @@ public:
         m_framebuffer.display();
         
         sf::Image img(m_framebuffer.getTexture().copyToImage());
-        img.saveToFile ("correct.png");
         
         const sf::Vector2u imgSize = img.getSize();
 

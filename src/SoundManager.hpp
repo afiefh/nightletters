@@ -76,6 +76,29 @@ public:
 
         return false;
     }
+    
+    static bool matchingPrefixes(const sf::String& str1, const sf::String& str2)
+    {
+        size_t index = 0;
+        bool equal = true;
+        while ( str1[index] != 0 && str2[index] != 0)
+        {
+            equal = equal && (str1[index] == str2[index]);
+            index++;
+        }
+        return equal;
+    }
+    
+    bool isAcceptableSubstring(sf::String& str) const
+    {
+        if (str.getSize() == 0) return true;
+
+        for(const sf::String& answer: m_sounds.front().acceptbaleAnswers) {
+            if(str.getSize() <= answer.getSize() && matchingPrefixes(str, answer)) return true;
+        }
+
+        return false;
+    }
   
     void playSound() {
         m_soundPlayer.stop();
@@ -84,7 +107,7 @@ public:
             throw("failed to load sound");
 
         m_soundPlayer.setBuffer(m_buffer);
-        //m_soundPlayer.play();
+        m_soundPlayer.play();
     }
   
     void next()

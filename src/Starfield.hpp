@@ -1,13 +1,25 @@
 #ifndef __STARFIELD_HPP__
 #define __STARFIELD_HPP__
+#include <iostream>
+template <typename T>
+inline T clamp(const T& n, const T& lower, const T& upper) {
+    return std::max(lower, std::min(n, upper));
+}
 
 class Star : public sf::Sprite {
 public:
-    Star()
+    
+    Star() : m_lifeSpan(365*24*60*60)
     {
         int scale = rand() % 100;
-        setCycle(scale * 0.05 / 100, (rand()%2000) / 2000.0f, (rand() % 314) / 100.0f, (10 + rand() % 40) / 100.0f);
+        setCycle(scale * 0.05 / 100, 3 * (rand()%2000) / 2000.0f, (rand() % 314) / 100.0f, (10 + rand() % 40) / 100.0f);
         setRotation(rand() % 360);
+    }
+    
+    void setTimes(float startTime, float lifeSpan)
+    {
+        m_startTime = startTime;
+        m_lifeSpan = std::max(15.0f, lifeSpan);
     }
     
     void setCycle(float baseScale, float omega, float theta, float variance) {
@@ -20,6 +32,20 @@ public:
 
     void update(float t) {
         float newScale = m_baseScale + m_variance * m_baseScale * sin(m_omega * t + m_theta);
+        
+        
+        float dyingTransitionScale;
+        if (t > m_startTime + m_lifeSpan)
+        {
+            dyingTransitionScale = 0; //star is already dead
+        }
+        else
+        {
+            const float lifeLeft = m_lifeSpan - (t-m_startTime);
+            dyingTransitionScale = std::min(lifeLeft, 5.0f)/5.0f;
+        }
+        
+        newScale *= dyingTransitionScale;
         setScale(newScale, newScale);
     }
 
@@ -28,16 +54,18 @@ public:
     {
         m_theta = m_theta + m_omega * t1Minust2;
     }
+    
+    bool isDead(float t) const { return t > m_startTime + m_lifeSpan; }
 
 private:
   float m_baseScale;
   float m_omega, m_theta, m_variance;
+  
+  // in seconds
+  float m_startTime;
+  float m_lifeSpan;
+  bool m_dead;
 };
-
-template <typename T>
-T clamp(const T& n, const T& lower, const T& upper) {
-    return std::max(lower, std::min(n, upper));
-}
 
 class MovingStar : public Star
 {
@@ -96,6 +124,7 @@ public:
             star.setTexture(*m_starTex, true);
             star.setOrigin(star.getTextureRect().width/2, star.getTextureRect().height/2);
             star.setPosition(rand() % windowSize.x, rand() % windowSize.y);
+            star.setTimes(m_t, rand() % (5*60));
         }
     }
   
@@ -113,20 +142,38 @@ public:
         {
             star.update(m_t);
         }
-        m_t+=0.05;
+        m_t+=0.017;
     }
     
     
-    void addStars(const std::vector<MovingStar>& stars, float starTime)
+    void addStars(const std::vector<MovingStar>& movingStars, float starTime)
     {
+        std::vector<Star> newStars;
+        newStars.reserve(m_stars.size() + newStars.size());
         
+        for (auto& star : m_stars)
+        {
+            if (!star.isDead(m_t))
+            {
+                newStars.push_back(star);
+            }
+        }
+        
+        int numberOfStars = newStars.size();
+        const int maxStars = 500;
+        float factor = std::max(float(maxStars - numberOfStars) / maxStars, 0.0f);
         const float t1Minust2 = m_t - starTime;
-        for(auto& star : stars)
+        for(auto& star : movingStars)
         {
             Star newStar(star);
             newStar.alignTheta(t1Minust2);
-            m_stars.push_back(newStar);
+            newStar.setTimes(m_t, factor * (rand() % (5*60)));
+            
+            
+            newStars.push_back(newStar);
         }
+        
+        std::swap(m_stars, newStars);
     }
 
 private:
