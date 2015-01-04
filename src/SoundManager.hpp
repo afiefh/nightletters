@@ -13,7 +13,7 @@ struct SoundData {
 
 class SoundManager {
 public:
-    void readJsonFile(const char* filename) 
+    std::string readJsonFile(const char* filename) 
     {
         m_filename = filename;
 
@@ -62,6 +62,8 @@ public:
 
         std::list<SoundData> resultList(result.begin(), result.end());
         std::swap(m_sounds, resultList);
+        
+        return root.isMember("fontFile") ? root["fontFile"].asString() : "LiberationSerif-Regular.ttf";
     }
   
     sf::String getDisplayText() const {

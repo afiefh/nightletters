@@ -1,5 +1,6 @@
 {
- "alphabet":
+  "fontFile": "amiri-regular.ttf",
+  "alphabet":
         [
          {"name":"ا", "file":"../audio/ar/a-01.ogg", "accept":""},
          {"name":"ب", "file":"../audio/ar/a-02.ogg", "accept":""},

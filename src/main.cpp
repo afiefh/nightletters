@@ -113,7 +113,7 @@ int main()
   
   //text stuff
   sf::ComplexFont mf;
-  mf.loadFromFile("amiri-regular.ttf");
+  mf.loadFromFile("LiberationSerif-Regular.ttf");
   sf::String inputStr;
   StrokedText text, inputDisplay;
   text.setCharacterSize (fontSize);
@@ -123,17 +123,27 @@ int main()
   
   SoundManager soundManager;
   
+  std::string currentFontFile("LiberationSerif-Regular.ttf");
   //the menu
   Menu menu("../graphic/icon-globe.png");
   menu.setPosition (windowSize.x * 0.9, windowSize.y * 0.9);
-  populateMenu("languages.json", [&soundManager, &text](std::string& dataFile) {
+  populateMenu("languages.json", [&soundManager, &text, &mf, &currentFontFile](std::string& dataFile) {
       if (dataFile == soundManager.getLoadedFile())
       {
           std::cout << "File " << dataFile << " already loaded" << std::endl;
           return;
       }
       std::cout << "Loading " << dataFile << std::endl;
-      soundManager.readJsonFile(dataFile.c_str());
+      std::string newFontFile = soundManager.readJsonFile(dataFile.c_str());
+      if(!mf.loadFromFile(newFontFile))
+      {
+          std::cout << "Unable to load font: " << newFontFile << " staying with: " << currentFontFile << std::endl;
+      }
+      else
+      {
+          currentFontFile = newFontFile;
+      }
+      
       soundManager.playSound();
       text.setString(soundManager.getDisplayText());
       std::wstring s(soundManager.getDisplayText().toWideString());
