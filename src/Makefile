@@ -8,7 +8,7 @@ endif
 
 
 #Define the source files, object files and dependency files
-SOURCES = main.cpp ComplexFont.cpp ComplexText.cpp wind.cpp lightning.cpp GLCheck.cpp utilities.cpp
+SOURCES = main.cpp ComplexFont.cpp ComplexText.cpp wind.cpp lightning.cpp SoundManager.cpp GLCheck.cpp utilities.cpp
 OBJECTS = $(SOURCES:%.cpp=%.o)
 DEPS = $(OBJECTS:.o=.d)
 

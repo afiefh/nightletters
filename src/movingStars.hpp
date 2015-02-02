@@ -57,10 +57,8 @@ public:
     {
         for(auto& star: m_stars)
         {
-            int scale = rand() % 100;
             star.update(m_t);
         }
-        //m_t = 1;
         m_t += 0.01;
     }
 
