@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "SoundManager.hpp"
 
-SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str) const
+SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
 {
     if (str.getSize() == 0)
     {
@@ -14,15 +14,25 @@ SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
     {
         if(str.getSize() <= answer.getSize() && matchingPrefixes(str, answer))
         {
-            return (str.getSize() == answer.getSize()) ? RESULT_RIGHT : RESULT_PARTIAL;
+            if (str.getSize() == answer.getSize())
+            {
+                m_userDifficulty += m_sounds.front().difficulty;
+                return RESULT_RIGHT;
+            }
+            return RESULT_PARTIAL;
         }
     }
-
+    
+    if (m_userDifficulty > 1)
+    {   // can't drop below 1!
+        m_userDifficulty -= m_sounds.front().difficulty;
+    }
     return RESULT_WRONG;
 }
 
 std::string SoundManager::readJsonFile(const char* filename) 
 {
+    m_userDifficulty = 1; 
     m_filename = filename;
 
     Json::Value root;
@@ -46,24 +56,34 @@ std::string SoundManager::readJsonFile(const char* filename)
 
     for(auto& sound : root["alphabet"]) 
     {
-        if(!sound.isMember("name")  ||!sound.isMember("file")  ||!sound.isMember("accept")) 
+        if(!sound.isMember("name")  ||!sound.isMember("file")) 
         {
-            std::cout << "Doesn't contain name,file,accept" << filename << std::endl;
-            throw "Doesn't contain name,file,accept";
+            std::cout << "Doesn't contain name,file" << filename << std::endl;
+            throw "Doesn't contain name,file";
         }
 
         std::string name = sound["name"].asString();
         std::string file = sound["file"].asString();
         sf::String sfml_name = sf::String::fromUtf8(name.begin(), name.end());
         std::vector<sf::String> acceptbaleAnswers;
-        for(const Json::Value& answer: sound["accept"]) 
+        
+        if (sound.isMember("accept"))
         {
-            std::string strAnswer = answer.asString();
-            acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
+          for(const Json::Value& answer: sound["accept"]) 
+          {
+              std::string strAnswer = answer.asString();
+              acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
+          }
         }
         if (acceptbaleAnswers.empty()) acceptbaleAnswers.push_back(sfml_name);
+        
+        unsigned int difficulty = 1;
+        if (sound.isMember("difficulty")) 
+        {
+          difficulty = sound["difficulty"].asUInt(); 
+        }
 
-        result.push_back( {sfml_name, file, acceptbaleAnswers}) ;
+        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty}) ;
     }
 
     std::random_shuffle(result.begin(), result.end());
@@ -76,15 +96,6 @@ std::string SoundManager::readJsonFile(const char* filename)
 
 sf::String SoundManager::getDisplayText() const {
     return m_sounds.front().name;
-}
-
-bool SoundManager::acceptableAnswer(sf::String str) const
-{
-    for(const sf::String& answer: m_sounds.front().acceptbaleAnswers) {
-        if(str == answer) return true;
-    }
-
-    return false;
 }
 
 /*static*/
@@ -123,10 +134,16 @@ void SoundManager::playSound() {
 
 void SoundManager::next()
 {
-    SoundData tmp = m_sounds.front();
-    m_sounds.push_back(tmp);
-    m_sounds.pop_front();
+    do 
+    {
+        SoundData tmp = m_sounds.front();
+        m_sounds.push_back(tmp);
+        m_sounds.pop_front();
+        std::cout << "userDifficulty: " << m_userDifficulty << " wordDifficulty: " << m_sounds.front().difficulty << std::endl;
+        //std::cout << " word: "  << m_sounds.front().name.toUtf8() 
+    } while (m_sounds.front().difficulty > m_userDifficulty);
 }
+
 
 const std::string SoundManager::getLoadedFile() const
 {

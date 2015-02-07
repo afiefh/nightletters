@@ -210,7 +210,6 @@ int main()
             SoundManager::AnswerCheckResult result = soundManager.checkAnswer(inputStr);
             if (result == SoundManager::RESULT_WRONG)
             {   //Wrong answer
-                std::cout << "Wrong answer: " << (soundManager.checkAnswer(inputStr) == SoundManager::RESULT_WRONG) << std::endl;
                 acceptInput = false;
                 lightning.onStart();
 
@@ -228,7 +227,6 @@ int main()
             }
             else if (result == SoundManager::SoundManager::RESULT_RIGHT)
             {   //Right answer
-                std::cout << "Right answer: " << (soundManager.checkAnswer(inputStr) == SoundManager::RESULT_RIGHT) << std::endl;
                 acceptInput = false;
 
                 textDisplayFadeIn.restart();
