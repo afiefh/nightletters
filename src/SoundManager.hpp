@@ -5,9 +5,17 @@
 
 class SoundManager {
 public:
+    enum AnswerCheckResult {
+      RESULT_RIGHT,
+      RESULT_WRONG,
+      RESULT_PARTIAL
+    };
+
     std::string readJsonFile(const char* filename);
   
     sf::String getDisplayText() const;
+
+    AnswerCheckResult checkAnswer(const sf::String& str) const;
   
     bool acceptableAnswer(sf::String str) const;
     

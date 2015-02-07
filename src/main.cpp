@@ -205,40 +205,46 @@ int main()
     while (window.isOpen())
     {
         sf::Time dt = clock.restart();
-        if (!soundManager.isAcceptableSubstring(inputStr) && acceptInput)
-        {   //Wrong answer
-            acceptInput = false;
-            lightning.onStart();
+        if (acceptInput)
+        {
+            SoundManager::AnswerCheckResult result = soundManager.checkAnswer(inputStr);
+            if (result == SoundManager::RESULT_WRONG)
+            {   //Wrong answer
+                std::cout << "Wrong answer: " << (soundManager.checkAnswer(inputStr) == SoundManager::RESULT_WRONG) << std::endl;
+                acceptInput = false;
+                lightning.onStart();
 
-            textDisplayFadeIn.restart();
-            textDisplayFadeOut.restart();
-            inputDisplayFadeIn.restart();
-            inputDisplayFadeOut.restart();
+                textDisplayFadeIn.restart();
+                textDisplayFadeOut.restart();
+                inputDisplayFadeIn.restart();
+                inputDisplayFadeOut.restart();
 
-            actionList.push_back(&inputDisplayFadeOut);
-            actionList.push_back(&textDisplayFadeOut);
-            actionList.push_back(&lightning);
-            actionList.push_back(&repeatLetter);
-            actionList.push_back(&inputDisplayFadeIn);
-            actionList.push_back(&textDisplayFadeIn);
-        }
-        else if (soundManager.acceptableAnswer(inputStr) && acceptInput)
-        {   //Right answer
-            acceptInput = false;
+                actionList.push_back(&inputDisplayFadeOut);
+                actionList.push_back(&textDisplayFadeOut);
+                actionList.push_back(&lightning);
+                actionList.push_back(&repeatLetter);
+                actionList.push_back(&inputDisplayFadeIn);
+                actionList.push_back(&textDisplayFadeIn);
+            }
+            else if (result == SoundManager::SoundManager::RESULT_RIGHT)
+            {   //Right answer
+                std::cout << "Right answer: " << (soundManager.checkAnswer(inputStr) == SoundManager::RESULT_RIGHT) << std::endl;
+                acceptInput = false;
 
-            textDisplayFadeIn.restart();
-            textDisplayFadeOut.restart();
-            inputDisplayFadeIn.restart();
-            inputDisplayFadeOut.restart();
-            blockingWaitOnRightAnswer.restart();
+                textDisplayFadeIn.restart();
+                textDisplayFadeOut.restart();
+                inputDisplayFadeIn.restart();
+                inputDisplayFadeOut.restart();
+                blockingWaitOnRightAnswer.restart();
 
-            actionList.push_back(&inputDisplayFadeOut);
-            actionList.push_back(&textDisplayFadeOut);
-            actionList.push_back(&blockingWaitOnRightAnswer);
-            actionList.push_back(&nextLetter);
-            actionList.push_back(&inputDisplayFadeIn);
-            actionList.push_back(&textDisplayFadeIn);
-            nightsky.getStarfield().generateStars(soundManager.getDisplayText(), mf, fontSize, textPosition, windowSize);
+                actionList.push_back(&inputDisplayFadeOut);
+                actionList.push_back(&textDisplayFadeOut);
+                actionList.push_back(&blockingWaitOnRightAnswer);
+                actionList.push_back(&nextLetter);
+                actionList.push_back(&inputDisplayFadeIn);
+                actionList.push_back(&textDisplayFadeIn);
+                nightsky.getStarfield().generateStars(soundManager.getDisplayText(), mf, fontSize, textPosition, windowSize);
+            }
         }
 
         // Event processing
@@ -276,7 +282,10 @@ int main()
         window.draw(nightsky);
         window.draw(text);
         actionList.update(dt);
-        acceptInput = actionList.empty();
+        if (actionList.empty())
+        {
+            acceptInput = actionList.empty();
+        }
         framebuffer.clear(sf::Color(0,0,0,0));
         window.draw(lightning);
 

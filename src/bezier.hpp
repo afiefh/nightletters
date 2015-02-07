@@ -58,6 +58,13 @@ private:
 
 class BezierCurve {
 public:
+  ~BezierCurve()
+  {
+    for(BezierSegment * pSegment : m_segments) {
+      delete pSegment;
+    }
+  }
+  
   void addSegment(BezierSegment * segment) {
     m_length += segment->getLength();
     m_segments.push_back(segment);

@@ -3,6 +3,24 @@
 #include <algorithm>
 #include "SoundManager.hpp"
 
+SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str) const
+{
+    if (str.getSize() == 0)
+    {
+        return RESULT_PARTIAL;
+    }
+
+    for(const sf::String& answer : m_sounds.front().acceptbaleAnswers)
+    {
+        if(str.getSize() <= answer.getSize() && matchingPrefixes(str, answer))
+        {
+            return (str.getSize() == answer.getSize()) ? RESULT_RIGHT : RESULT_PARTIAL;
+        }
+    }
+
+    return RESULT_WRONG;
+}
+
 std::string SoundManager::readJsonFile(const char* filename) 
 {
     m_filename = filename;

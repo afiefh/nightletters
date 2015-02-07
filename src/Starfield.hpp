@@ -9,7 +9,7 @@ inline T clamp(const T& n, const T& lower, const T& upper) {
 class Star : public sf::Sprite {
 public:
     
-    Star() : m_lifeSpan(365*24*60*60)
+    Star() : m_startTime(0), m_lifeSpan(365*24*60*60)
     {
         int scale = rand() % 100;
         setCycle(scale * 0.05 / 100, 3 * (rand()%2000) / 2000.0f, (rand() % 314) / 100.0f, (10 + rand() % 40) / 100.0f);
@@ -189,34 +189,35 @@ private:
 class Starfield : public sf::Drawable {
 public:
     Starfield(size_t n, const char * starImage, const sf::Vector2i& windowSize)
-    : movingStars(&m_texture)
-    , stationaryStars(&m_texture)
+    : m_movingStars(&m_texture)
+    , m_stationaryStars(&m_texture)
     {
         m_texture.loadFromFile(starImage);
-        stationaryStars.generateStars(n, windowSize);
+        m_stationaryStars.generateStars(n, windowSize);
     }
 
     virtual void  draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
-        target.draw(movingStars, states);
-        target.draw(stationaryStars, states);
+        target.draw(m_movingStars, states);
+        target.draw(m_stationaryStars, states);
     }
 
     void update()
     {
-        movingStars.update();
-        stationaryStars.update();
+        m_movingStars.update();
+        m_stationaryStars.update();
     }
 
     void generateStars(sf::String str, sf::ComplexFont &mf, unsigned int characterSize, const sf::Vector2f& textPosition, const sf::Vector2i& windowSize)
     {
-        stationaryStars.addStars(movingStars.getStars(), movingStars.getTime());
-        movingStars.generateStars(str, mf, characterSize, textPosition, windowSize);
+        m_stationaryStars.addStars(m_movingStars.getStars(), m_movingStars.getTime());
+        m_movingStars.generateStars(str, mf, characterSize, textPosition, windowSize);
+        
     }
 
 private:
-    MovingStars movingStars;
-    StationaryStars stationaryStars;
+    MovingStars m_movingStars;
+    StationaryStars m_stationaryStars;
     sf::Texture m_texture;
 };
 

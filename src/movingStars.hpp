@@ -1,6 +1,6 @@
 #include "ComplexText.hpp"
 #include "ComplexFont.hpp"
-
+#include <iostream>
 const unsigned int renderFactor = 4;
 
 class MovingStars : public sf::Drawable
@@ -51,6 +51,8 @@ public:
             }
         }
         m_t = 0;
+        
+        //std::cout << "Moving stars: " << m_stars.size() << std::endl;
     }
 
     void update()
@@ -60,6 +62,7 @@ public:
             star.update(m_t);
         }
         m_t += 0.01;
+        //std::cout << "Moving stars t=" << m_t << std::endl;
     }
 
     virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const
