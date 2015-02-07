@@ -16,8 +16,6 @@ public:
     sf::String getDisplayText() const;
 
     AnswerCheckResult checkAnswer(const sf::String& str);
-    
-    bool isAcceptableSubstring(sf::String& str) const;
   
     void playSound();
   

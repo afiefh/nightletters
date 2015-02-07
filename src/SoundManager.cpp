@@ -22,7 +22,7 @@ SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
             return RESULT_PARTIAL;
         }
     }
-    
+
     if (m_userDifficulty > 1)
     {   // can't drop below 1!
         m_userDifficulty -= m_sounds.front().difficulty;
@@ -30,9 +30,9 @@ SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
     return RESULT_WRONG;
 }
 
-std::string SoundManager::readJsonFile(const char* filename) 
+std::string SoundManager::readJsonFile(const char* filename)
 {
-    m_userDifficulty = 1; 
+    m_userDifficulty = 1;
     m_filename = filename;
 
     Json::Value root;
@@ -41,22 +41,22 @@ std::string SoundManager::readJsonFile(const char* filename)
     std::ifstream ifs(filename);
 
     bool success = reader.parse(ifs, root, false);
-    if(!success) 
+    if(!success)
     {
         std::cout << "Error reading json file: " << filename << std::endl;
         throw "Error reading json";
     }
 
     std::vector<SoundData> result;
-    if(!root.isMember("alphabet")) 
+    if(!root.isMember("alphabet"))
     {
         std::cout << "Doesn't contain alphabet" << filename << std::endl;
         throw "Doesn't contain alphabet";
     }
 
-    for(auto& sound : root["alphabet"]) 
+    for(auto& sound : root["alphabet"])
     {
-        if(!sound.isMember("name")  ||!sound.isMember("file")) 
+        if(!sound.isMember("name")  ||!sound.isMember("file"))
         {
             std::cout << "Doesn't contain name,file" << filename << std::endl;
             throw "Doesn't contain name,file";
@@ -66,31 +66,33 @@ std::string SoundManager::readJsonFile(const char* filename)
         std::string file = sound["file"].asString();
         sf::String sfml_name = sf::String::fromUtf8(name.begin(), name.end());
         std::vector<sf::String> acceptbaleAnswers;
-        
+
         if (sound.isMember("accept"))
         {
-          for(const Json::Value& answer: sound["accept"]) 
-          {
-              std::string strAnswer = answer.asString();
-              acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
-          }
+            for(const Json::Value& answer: sound["accept"])
+            {
+                std::string strAnswer = answer.asString();
+                acceptbaleAnswers.push_back(sf::String::fromUtf8(strAnswer.begin(), strAnswer.end()));
+            }
         }
         if (acceptbaleAnswers.empty()) acceptbaleAnswers.push_back(sfml_name);
-        
+
         unsigned int difficulty = 1;
-        if (sound.isMember("difficulty")) 
+        if (sound.isMember("difficulty"))
         {
-          difficulty = sound["difficulty"].asUInt(); 
+            difficulty = sound["difficulty"].asUInt();
         }
 
-        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty}) ;
+        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty} );
     }
 
     std::random_shuffle(result.begin(), result.end());
 
     std::list<SoundData> resultList(result.begin(), result.end());
     std::swap(m_sounds, resultList);
-    
+
+    next(); //to avoid getting something too difficult first
+
     return root.isMember("fontFile") ? root["fontFile"].asString() : "LiberationSerif-Regular.ttf";
 }
 
@@ -111,18 +113,8 @@ bool SoundManager::matchingPrefixes(const sf::String& str1, const sf::String& st
     return equal;
 }
 
-bool SoundManager::isAcceptableSubstring(sf::String& str) const
+void SoundManager::playSound()
 {
-    if (str.getSize() == 0) return true;
-
-    for(const sf::String& answer: m_sounds.front().acceptbaleAnswers) {
-        if(str.getSize() <= answer.getSize() && matchingPrefixes(str, answer)) return true;
-    }
-
-    return false;
-}
-
-void SoundManager::playSound() {
     m_soundPlayer.stop();
     m_soundPlayer.resetBuffer();
     if (!m_buffer.loadFromFile(m_sounds.front().filename))
@@ -134,13 +126,13 @@ void SoundManager::playSound() {
 
 void SoundManager::next()
 {
-    do 
+    do
     {
         SoundData tmp = m_sounds.front();
         m_sounds.push_back(tmp);
         m_sounds.pop_front();
         std::cout << "userDifficulty: " << m_userDifficulty << " wordDifficulty: " << m_sounds.front().difficulty << std::endl;
-        //std::cout << " word: "  << m_sounds.front().name.toUtf8() 
+        //std::cout << " word: "  << m_sounds.front().name.toUtf8()
     } while (m_sounds.front().difficulty > m_userDifficulty);
 }
 
