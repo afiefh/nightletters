@@ -254,7 +254,8 @@ int main()
                 window.close();
             } else if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
-                    menu.clicked(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
+                    sf::Vector2u currentWindowSize = window.getSize();
+                    menu.clicked(sf::Vector2f(event.mouseButton.x * windowSize.x / currentWindowSize.x, event.mouseButton.y * windowSize.y / currentWindowSize.y));
                 }
             } else if (event.type == sf::Event::TextEntered && acceptInput) {
                 if (event.text.unicode == '\b') {
