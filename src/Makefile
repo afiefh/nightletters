@@ -25,20 +25,20 @@ nightletters: ${OBJECTS}
 
 run: nightletters
 ifeq ($(OS),Windows_NT)
+		rm -rf build/graphic
+		rm -rf build/audio
 		cp nightletters.exe build/bin
+		cp *.json build/bin
+		cp -r ../graphic build/
+		cp -r ../audio build/
 		cd build/bin; ./nightletters.exe
 else
 		LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters
 endif
 
-dist:
+dist: nightletters
 ifeq ($(OS),Windows_NT)
-		cp nightletters.exe build/bin
-		cp *.json build/bin
-		rm -rf build/graphic
-		rm -rf build/audio
-		cp -r ../graphic build/
-		cp -r ../audio build/
+		rm -f Nightletters.zip
 		zip -r -9 Nightletters.zip build
 else
 		echo "Can't make dist on Linux"
