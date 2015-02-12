@@ -27,6 +27,30 @@
             {"name":"ק", "file":"../audio/he/alpha/a-24.ogg"},
             {"name":"ר", "file":"../audio/he/alpha/a-25.ogg"},
             {"name":"ש", "file":"../audio/he/alpha/a-26.ogg"},
-            {"name":"ת", "file":"../audio/he/alpha/a-27.ogg"}
+            {"name":"ת", "file":"../audio/he/alpha/a-27.ogg"},
+            
+            {"name":"אב", "file":"../audio/he/syllab/ad-01.ogg", "difficulty":10},
+            {"name":"רק", "file":"../audio/he/syllab/ad-02.ogg", "difficulty":10},
+            {"name":"גם", "file":"../audio/he/syllab/ad-03.ogg", "difficulty":10},
+            {"name":"לא", "file":"../audio/he/syllab/ad-04.ogg", "difficulty":10},
+            {"name":"כן", "file":"../audio/he/syllab/ad-05.ogg", "difficulty":10},
+            {"name":"צח", "file":"../audio/he/syllab/ad-07.ogg", "difficulty":10},
+            {"name":"לי", "file":"../audio/he/syllab/ad-08.ogg", "difficulty":10},
+            {"name":"הר", "file":"../audio/he/syllab/ad-09.ogg", "difficulty":10},
+            {"name":"נר", "file":"../audio/he/syllab/ad-10.ogg", "difficulty":10},
+            {"name":"קו", "file":"../audio/he/syllab/ad-12.ogg", "difficulty":10},
+            {"name":"בו", "file":"../audio/he/syllab/ad-13.ogg", "difficulty":10},
+            {"name":"בי", "file":"../audio/he/syllab/ad-14.ogg", "difficulty":10},
+            {"name":"כי", "file":"../audio/he/syllab/ad-15.ogg", "difficulty":10},
+            {"name":"די", "file":"../audio/he/syllab/ad-16.ogg", "difficulty":10},
+            {"name":"סל", "file":"../audio/he/syllab/ad-17.ogg", "difficulty":10},
+            {"name":"יש", "file":"../audio/he/syllab/ad-18.ogg", "difficulty":10},
+            {"name":"עד", "file":"../audio/he/syllab/ad-19.ogg", "difficulty":10},
+            {"name":"גר", "file":"../audio/he/syllab/ad-20.ogg", "difficulty":10},
+            {"name":"דג", "file":"../audio/he/syllab/ad-21.ogg", "difficulty":10},
+            {"name":"ים", "file":"../audio/he/syllab/ad-23.ogg", "difficulty":10},
+            {"name":"מי", "file":"../audio/he/syllab/ad-24.ogg", "difficulty":10},
+            {"name":"אף", "file":"../audio/he/syllab/ad-25.ogg", "difficulty":10},
+            {"name":"קש", "file":"../audio/he/syllab/ad-26.ogg", "difficulty":10}
         ]
 }

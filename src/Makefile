@@ -24,4 +24,22 @@ nightletters: ${OBJECTS}
 	g++ ${cxxflags} -MP -MMD -c $< -o $@
 
 run: nightletters
-	LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters
+ifeq ($(OS),Windows_NT)
+		cp nightletters.exe build/bin
+		cd build/bin; ./nightletters.exe
+else
+		LD_LIBRARY_PATH=/home/afiefh/src/sfml_compiled/lib ./nightletters
+endif
+
+dist:
+ifeq ($(OS),Windows_NT)
+		cp nightletters.exe build/bin
+		cp *.json build/bin
+		rm -rf build/graphic
+		rm -rf build/audio
+		cp -r ../graphic build/
+		cp -r ../audio build/
+		zip -r -9 Nightletters.zip build
+else
+		echo "Can't make dist on Linux"
+endif
