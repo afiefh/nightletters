@@ -31,12 +31,15 @@ private:
         std::string filename;
         std::vector<sf::String> acceptbaleAnswers;
         unsigned int difficulty;
+        unsigned int lastAsked;
     };
 
     std::list<SoundData> m_sounds;
+    std::list<SoundData> m_mistakeRepeats;
     sf::Sound            m_soundPlayer;
     sf::SoundBuffer      m_buffer;
     std::string          m_filename;
     unsigned int         m_userDifficulty;
-    
+    unsigned int         m_timestamp;
+    SoundData            m_currentSound;
 };

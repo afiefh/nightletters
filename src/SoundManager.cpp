@@ -10,7 +10,7 @@ SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
         return RESULT_PARTIAL;
     }
 
-    for(const sf::String& answer : m_sounds.front().acceptbaleAnswers)
+    for(const sf::String& answer : m_currentSound.acceptbaleAnswers)
     {
         if(str.getSize() <= answer.getSize() && matchingPrefixes(str, answer))
         {
@@ -25,15 +25,24 @@ SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
 
     if (m_userDifficulty > 1)
     {   // can't drop below 1!
-        m_userDifficulty -= m_sounds.front().difficulty;
+        m_userDifficulty -= m_currentSound.difficulty;
+    }
+
+    // add wrong answer to list of wrong answers
+    if (m_mistakeRepeats.back().name != m_currentSound.name)
+    {
+        m_mistakeRepeats.push_back(m_currentSound);
+        m_mistakeRepeats.back().lastAsked = m_timestamp;
     }
     return RESULT_WRONG;
 }
 
 std::string SoundManager::readJsonFile(const char* filename)
 {
+    m_timestamp = 0;
     m_userDifficulty = 1;
     m_filename = filename;
+    m_mistakeRepeats.clear();
 
     Json::Value root;
     Json::Reader reader;
@@ -83,7 +92,7 @@ std::string SoundManager::readJsonFile(const char* filename)
             difficulty = sound["difficulty"].asUInt();
         }
 
-        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty} );
+        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty, (unsigned int)-1} );
     }
 
     std::random_shuffle(result.begin(), result.end());
@@ -97,7 +106,7 @@ std::string SoundManager::readJsonFile(const char* filename)
 }
 
 sf::String SoundManager::getDisplayText() const {
-    return m_sounds.front().name;
+    return m_currentSound.name;
 }
 
 /*static*/
@@ -117,7 +126,7 @@ void SoundManager::playSound()
 {
     m_soundPlayer.stop();
     m_soundPlayer.resetBuffer();
-    if (!m_buffer.loadFromFile(m_sounds.front().filename))
+    if (!m_buffer.loadFromFile(m_currentSound.filename))
         throw("failed to load sound");
 
     m_soundPlayer.setBuffer(m_buffer);
@@ -126,6 +135,15 @@ void SoundManager::playSound()
 
 void SoundManager::next()
 {
+    m_timestamp++;
+
+    if (!m_mistakeRepeats.empty() && m_timestamp >= m_mistakeRepeats.front().lastAsked + 3)
+    {
+        m_currentSound = m_mistakeRepeats.front();
+        m_mistakeRepeats.pop_front();
+        return;
+    }
+
     do
     {
         SoundData tmp = m_sounds.front();
@@ -134,6 +152,8 @@ void SoundManager::next()
         std::cout << "userDifficulty: " << m_userDifficulty << " wordDifficulty: " << m_sounds.front().difficulty << std::endl;
         //std::cout << " word: "  << m_sounds.front().name.toUtf8()
     } while (m_sounds.front().difficulty > m_userDifficulty);
+
+    m_currentSound = m_sounds.front();
 }
 
 
