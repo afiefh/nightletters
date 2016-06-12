@@ -1,4 +1,4 @@
-﻿#include <GL/glew.h>
+#include <GL/glew.h>
 
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
