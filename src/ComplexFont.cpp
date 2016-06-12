@@ -33,7 +33,7 @@
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
 
-#include <freetype2/ftstroke.h>
+#include <freetype/ftstroke.h>
 
 
 
@@ -444,7 +444,7 @@ Glyph ComplexFont::loadGlyph(Uint32 index, unsigned int characterSize, bool bold
       FT_Glyph_StrokeBorder(&glyphDesc, stroker, 0, 1);
       FT_Stroker_Done(stroker);
     }
-    
+
     // Convert the glyph to a bitmap (i.e. rasterize it)
     FT_Glyph_To_Bitmap(&glyphDesc, FT_RENDER_MODE_NORMAL, 0, 1);
     FT_BitmapGlyph bitmapGlyph = (FT_BitmapGlyph)glyphDesc;
@@ -475,11 +475,18 @@ Glyph ComplexFont::loadGlyph(Uint32 index, unsigned int characterSize, bool bold
         // Find a good position for the new glyph into the texture
         glyph.textureRect = findGlyphRect(page, width + 2 * padding, height + 2 * padding);
 
+        // Make sure the texture data is positioned in the center
+        // of the allocated texture rectangle
+        glyph.textureRect.left += padding;
+        glyph.textureRect.top += padding;
+        glyph.textureRect.width -= 2 * padding;
+        glyph.textureRect.height -= 2 * padding;
+
         // Compute the glyph's bounding box
-        glyph.bounds.left   = bitmapGlyph->left - padding;
-        glyph.bounds.top    = -bitmapGlyph->top - padding;
-        glyph.bounds.width  = width + 2 * padding;
-        glyph.bounds.height = height + 2 * padding;
+        glyph.bounds.left   =  static_cast<float>(face->glyph->metrics.horiBearingX) / static_cast<float>(1 << 6) - (strokeWidth / 64.0f);
+        glyph.bounds.top    = -static_cast<float>(face->glyph->metrics.horiBearingY) / static_cast<float>(1 << 6) - (strokeWidth / 64.0f);
+        glyph.bounds.width  =  static_cast<float>(face->glyph->metrics.width)        / static_cast<float>(1 << 6) + (strokeWidth / 64.0f) * 2;
+        glyph.bounds.height =  static_cast<float>(face->glyph->metrics.height)       / static_cast<float>(1 << 6) + (strokeWidth / 64.0f) * 2;
 
         // Extract the glyph's pixels from the bitmap
         m_pixelBuffer.resize(width * height * 4, 255);
@@ -514,10 +521,10 @@ Glyph ComplexFont::loadGlyph(Uint32 index, unsigned int characterSize, bool bold
         }
 
         // Write the pixels to the texture
-        unsigned int x = glyph.textureRect.left + padding;
-        unsigned int y = glyph.textureRect.top + padding;
-        unsigned int w = glyph.textureRect.width - 2 * padding;
-        unsigned int h = glyph.textureRect.height - 2 * padding;
+        unsigned int x = glyph.textureRect.left;
+        unsigned int y = glyph.textureRect.top;
+        unsigned int w = glyph.textureRect.width;
+        unsigned int h = glyph.textureRect.height;
         page.texture.update(&m_pixelBuffer[0], w, h, x, y);
     }
 

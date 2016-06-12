@@ -12,23 +12,24 @@ public:
     };
 
     std::string readJsonFile(const char* filename);
-  
-    sf::String getDisplayText() const;
 
     AnswerCheckResult checkAnswer(const sf::String& str);
-  
-    void playSound();
-  
+
     void next();
-  
-    const std::string getLoadedFile() const;
-  
+
+    void playSound();
+
+    sf::String getDisplayText() const { return m_currentSound.name; }
+    std::string getImageFilename() const { return m_currentSound.imageFilename; }
+    const std::string getLoadedFile() const { return m_filename; }
+
 private:
     static bool matchingPrefixes(const sf::String& str1, const sf::String& str2);
 
     struct SoundData {
         sf::String  name;
         std::string filename;
+        std::string imageFilename;
         std::vector<sf::String> acceptbaleAnswers;
         unsigned int difficulty;
         unsigned int lastAsked;

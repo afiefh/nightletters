@@ -35,18 +35,18 @@ class ActionList : public std::list<Action*> {
 public:
   void update(const sf::Time &dt) {
     auto it = this->begin();
-    
+
     while(it != this->end()) {
       (*it)->update(dt);
-      if ((*it)->isFinished()) { 
+      if ((*it)->isFinished()) {
         (*it)->onEnd();
         it = this->erase(it); //returns the next element
-        continue; 
+        continue;
       }
       if ((*it)->isBlocking()) break;
       ++it;
     }
-    
+
   }
 };
 
@@ -74,7 +74,7 @@ void populateMenu(const char* languageFile, LanguageLoader loader, Menu &menu)
             std::cout << "Doesn't contain name icon, data" << languageFile << std::endl;
             throw "Doesn't contain icon, data";
         }
-        
+
         std::string icon = language["icon"].asString();
         std::string data = language["data"].asString();
 
@@ -83,10 +83,10 @@ void populateMenu(const char* languageFile, LanguageLoader loader, Menu &menu)
             loader(data);
             first = false;
         }
-        
+
         menu.addSubmenu(icon).setFunction(std::bind(loader, std::move(data)));
     }
-    
+
 }
 
 const sf::Vector2f textPosition(50,50);

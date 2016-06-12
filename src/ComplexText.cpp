@@ -35,8 +35,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-ComplexText::ComplexText() : 
-m_dir          (HB_DIRECTION_INVALID), 
+ComplexText::ComplexText() :
+m_dir          (HB_DIRECTION_INVALID),
 m_script       (HB_SCRIPT_INVALID),
 m_string       (),
 m_font         (NULL),
@@ -59,8 +59,8 @@ void ComplexText::SetDirection(hb_direction_t dir)
 
 
 ////////////////////////////////////////////////////////////
-ComplexText::ComplexText(const String& string, const ComplexFont& font, unsigned int characterSize) : 
-m_dir          (HB_DIRECTION_INVALID), 
+ComplexText::ComplexText(const String& string, const ComplexFont& font, unsigned int characterSize) :
+m_dir          (HB_DIRECTION_INVALID),
 m_script       (HB_SCRIPT_INVALID),
 m_string       (string),
 m_font         (&font),
@@ -114,23 +114,23 @@ void ComplexText::updateGeometry()
     float minY = static_cast<float>(m_characterSize);
     float maxX = 0.f;
     float maxY = 0.f;
-    
+
     // prepare harfbuzz buffer and font face to shape the complex text
     hb_font_t *hbFtFont = hb_ft_font_create(static_cast<FT_Face>(m_font->m_face), NULL);
     hb_buffer_t *buf = hb_buffer_create();
-    
+
     // divide the string into lines
     const Uint32* lineStart = m_string.getData();
-    while(true) 
+    while(true)
     {
         //find the end of the line
         const Uint32 *lineEnd;
         for(lineEnd = lineStart; *lineEnd != '\n' && *lineEnd != '\v' && *lineEnd != '\0'; ++lineEnd);
-        
+
         hb_buffer_set_direction(buf, m_dir);
         hb_buffer_set_script(buf, m_script);
         hb_buffer_add_utf32(buf, lineStart, lineEnd - lineStart, 0, lineEnd - lineStart);
-        
+
         // if the script or direction aren't set, try to guess them before shaping
         hb_buffer_guess_segment_properties(buf);
         hb_shape(hbFtFont, buf, NULL, 0);
@@ -159,7 +159,7 @@ void ComplexText::updateGeometry()
             float u2 = static_cast<float>(glyph.textureRect.left + glyph.textureRect.width);
             float v2 = static_cast<float>(glyph.textureRect.top  + glyph.textureRect.height);
 
-            
+
             int currentX = x + (curGlyphPos.x_offset >> 6);
             int currentY = y + (curGlyphPos.y_offset >> 6);
             // Add a quad for the current character
@@ -196,21 +196,21 @@ void ComplexText::updateGeometry()
         m_bounds.top = minY;
         m_bounds.width = maxX - minX;
         m_bounds.height = maxY - minY;
-        
+
         if (*lineEnd == '\0')
           break;
-          
+
         if (*lineEnd == '\n') {
             y += vspace;
         } else if (*lineEnd == '\v') {
             y += vspace * 4;
         }
-        
+
         x = 0;
         lineStart = lineEnd + 1;
         hb_buffer_reset(buf);
     }
-    
+
     hb_buffer_destroy(buf);
     hb_font_destroy(hbFtFont);
 }
@@ -235,44 +235,44 @@ Vector2f ComplexText::findCharacterPos(std::size_t index) const
     // because spaces and tabs aren't returned in the position
     size_t lastLineStart = 0;
     size_t skippedGlyphs = 0;
-    for (std::size_t i = 0; i < index; ++i) 
+    for (std::size_t i = 0; i < index; ++i)
     {
         Uint32 curChar = m_string[i];
-        if (curChar == ' '  || curChar == '\t') 
+        if (curChar == ' '  || curChar == '\t')
         {
           ++skippedGlyphs;
         }
-        else if(curChar == '\n' || curChar == '\v') 
+        else if(curChar == '\n' || curChar == '\v')
         {
           lastLineStart = i+1;
           skippedGlyphs = 0;
         }
     }
-    
+
     //shape only the relevant line
     hb_font_t *hbFtFont = hb_ft_font_create(static_cast<FT_Face>(m_font->m_face), NULL);
     hb_buffer_t *buf = hb_buffer_create();
-    
+
     hb_buffer_set_direction(buf, m_dir);
     hb_buffer_set_script(buf, m_script);
     hb_buffer_add_utf32(buf, m_string.getData() + lastLineStart, index - lastLineStart, 0, index - lastLineStart);
-    
+
     // if the script or direction aren't set, try to guess them before shaping
     hb_buffer_guess_segment_properties(buf);
     hb_shape(hbFtFont, buf, NULL, 0);
-    
+
     // from the shaped text we get the glyphs and positions
     unsigned int         glyphCount;
     hb_glyph_position_t *glyphPos  = hb_buffer_get_glyph_positions(buf, &glyphCount);
-    
+
 
     //calculate the glyph index
     size_t glyphIndex = index - lastLineStart - skippedGlyphs;
-    if (glyphIndex > glyphCount) 
+    if (glyphIndex > glyphCount)
     {
       glyphIndex = index - lastLineStart - skippedGlyphs;
     }
-      
+
     // Compute the position
     Vector2f position;
     for (std::size_t i = 0; i < glyphIndex; ++i)
@@ -282,7 +282,7 @@ Vector2f ComplexText::findCharacterPos(std::size_t index) const
         position.x += curGlyphPos.x_advance >> 6;
         position.y += curGlyphPos.y_advance >> 6;
     }
-    
+
     //add the final (non cumulative) offsets
     hb_glyph_position_t curGlyphPos = glyphPos[glyphIndex - 1];
     position.x += (curGlyphPos.x_offset >> 6);
@@ -293,7 +293,7 @@ Vector2f ComplexText::findCharacterPos(std::size_t index) const
 
     hb_buffer_destroy(buf);
     hb_font_destroy(hbFtFont);
-    
+
     return position;
 }
 

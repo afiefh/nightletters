@@ -2,6 +2,7 @@
 #include <fstream>
 #include <algorithm>
 #include "SoundManager.hpp"
+#include <iostream>
 
 SoundManager::AnswerCheckResult SoundManager::checkAnswer(const sf::String& str)
 {
@@ -91,8 +92,13 @@ std::string SoundManager::readJsonFile(const char* filename)
         {
             difficulty = sound["difficulty"].asUInt();
         }
+        std::string imageFile;
+        if (sound.isMember("imageFile"))
+        {
+            imageFile = sound["imageFile"].asString();
+        }
 
-        result.push_back( {sfml_name, file, acceptbaleAnswers, difficulty, (unsigned int)-1} );
+        result.push_back( {sfml_name, file, imageFile, acceptbaleAnswers, difficulty, (unsigned int)-1} );
     }
 
     std::random_shuffle(result.begin(), result.end());
@@ -103,10 +109,6 @@ std::string SoundManager::readJsonFile(const char* filename)
     next(); //to avoid getting something too difficult first
 
     return root.isMember("fontFile") ? root["fontFile"].asString() : "LiberationSerif-Regular.ttf";
-}
-
-sf::String SoundManager::getDisplayText() const {
-    return m_currentSound.name;
 }
 
 /*static*/
@@ -154,10 +156,4 @@ void SoundManager::next()
     } while (m_sounds.front().difficulty > m_userDifficulty);
 
     m_currentSound = m_sounds.front();
-}
-
-
-const std::string SoundManager::getLoadedFile() const
-{
-    return m_filename;
 }
