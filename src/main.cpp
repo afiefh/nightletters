@@ -23,6 +23,16 @@
 #include "tree.hpp"
 #include "menu.hpp"
 
+class Foo;
+template<typename Foo> class Bar;
+
+class Foo
+{
+    void foo();
+};
+
+void Foo::foo() { std::cout << "foo\n"; }
+
 void initializeGlew() {
   GLenum err = glewInit();
   if (GLEW_OK != err)
